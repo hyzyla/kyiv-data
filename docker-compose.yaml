@@ -1,0 +1,62 @@
+version: '3.7'
+
+
+x-python: &app-python
+  tty: true
+  build:
+    context: .
+    dockerfile: docker/dev.dockerfile
+  image: kyiv-dashboard
+  volumes: [ '.:/app' ]
+  environment:
+    - FLASK_APP=app.main:app
+  env_file:
+    - config/dev/dev.env
+
+
+x-tools: &app-tools
+  tty: true
+  build:
+    context: .
+    dockerfile: docker/tools.dockerfile
+  image: kyiv-dashboard-tools
+  volumes: [ '.:/app' ]
+
+
+services:
+  app:
+    <<: *app-python
+    entrypoint: flask
+    command: run --host=0.0.0.0
+    ports: ['5000:5000']
+    depends_on: ['db']
+
+  db:
+    image: postgres:13
+    ports: ['5432:5432']
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: kyiv-dashboard-database
+
+  flake8:
+    <<: *app-tools
+    entrypoint: flake8 app
+
+  mypy:
+    <<: *app-tools
+    entrypoint: mypy app
+
+  black:
+    <<: *app-tools
+    entrypoint: black -t py38 -S app
+
+  alembic:
+    <<: *app-tools
+    entrypoint: alembic
+    depends_on: ['db']
+
+  pip-compile:
+    <<: *app-tools
+    entrypoint: pip-compile
+    command: requirements/base.in -o requirements/base.txt
