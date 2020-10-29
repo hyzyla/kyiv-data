@@ -1,6 +1,6 @@
 import logging
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import requests
 
@@ -10,7 +10,23 @@ from app.main import app, db
 from app.models import Ticket
 
 PAGE_SIZE = 1000
+TICKETS_URL = f'{settings.CC_HOST}/api/tickets/search'
+TICKETS_PROGRESS_URL = f'{settings.CC_HOST}/api/ticket-progress/{{ticket_id}}'
 
+MONTH_MAP = {
+    'Січень': 1,
+    'Лютий': 2,
+    'Березень': 3,
+    'Квітень': 4,
+    'Травень': 5,
+    'Червень': 6,
+    'Липень': 7,
+    'Серпень': 8,
+    'Вересень': 9,
+    'Жовнеть': 10,
+    'Листопад': 11,
+    'Грудень': 12
+}
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +35,7 @@ def _fetch_tickets_page(page_num: int = 1):
     logger.info(f'Fetch page {page_num}')
 
     response = requests.get(
-        url=settings.CONTACT_CENTER_TICKETS_URL,
+        url=TICKETS_URL,
         params={
             'per_page': PAGE_SIZE,
             'page': page_num,
@@ -46,7 +62,7 @@ def _fetch_last_processed_page(ticket_id: int):
             raise ValueError()
 
         last, first = items[0], items[-1]
-        print(first['id'], ticket_id, last['id'])
+        logger.info(f'Fetching last page: {first["id"]} < {ticket_id} < {last["id"]}')
         if first['id'] <= ticket_id <= last['id']:
             return page
 
@@ -70,6 +86,24 @@ def _process_page_tickets(page, last_id: int):
     db.session.commit()
 
 
+def _fetch_ticket_progress(ticket_id: str):
+    response = requests.get(url=TICKETS_PROGRESS_URL.format(ticket_id))
+    response.raise_for_status()
+    data = response.json()
+
+    # Normalize data
+    data: Dict = data['ticket_progress']
+    data.pop('placeholders')
+    result = []
+    for key, items in data.items():
+        month, year = key.split(' - ', maxsplit=2)
+        for item in items:
+            item['month'] = MONTH_MAP[month]
+            item['year'] = int(year)
+        result.extend(items)
+    return result
+
+
 @app.cli.command()
 def get_new_tickets():
     ticket = select_last_ticket()
@@ -90,4 +124,10 @@ def get_new_tickets():
         page = _fetch_tickets_page(current_page)
 
 
+@app.cli.command()
+def get_ticket_progress():
+    ticket = select_last_ticket()
+    progress = _fetch_ticket_progress(ticket.external_id)
+    from pprint import pprint
+    pprint(progress)
 
