@@ -6,7 +6,7 @@ x-python: &app-python
   build:
     context: .
     dockerfile: docker/dev.dockerfile
-  image: kyiv-dashboard
+  image: kyiv-data
   volumes: [ '.:/app' ]
   environment:
     - FLASK_APP=app.main:app
@@ -19,7 +19,7 @@ x-tools: &app-tools
   build:
     context: .
     dockerfile: docker/tools.dockerfile
-  image: kyiv-dashboard-tools
+  image: kyiv-data-tools
   volumes: [ '.:/app' ]
 
 
@@ -37,7 +37,7 @@ services:
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
-      POSTGRES_DB: kyiv-dashboard-database
+      POSTGRES_DB: kyiv-data-database
 
   flake8:
     <<: *app-tools

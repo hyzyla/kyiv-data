@@ -7,7 +7,7 @@ from app.models import Ticket
 def select_last_ticket() -> Optional[Ticket]:
     return (
         db.session.query(Ticket)
-        .order_by(Ticket.external_id.cast(db.BigInteger).desc())
+        .order_by(Ticket.external_id.desc())
         .first()
     )
 
