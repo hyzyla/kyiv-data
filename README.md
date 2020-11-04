@@ -12,7 +12,13 @@ docker-compose run --rm pip-compile requirements/tools.in -o requirements/tools.
 ```
 
 
-##  Auto genereate migration 
+## Generate requirements/prod.txt
+```
+docker-compose run --rm pip-compile requirements/prod.in -o requirements/prod.txt
+```
+
+
+##  Auto generate migration 
 ```
 docker-compose run app db migrate -m "Initial migration."
 ```

@@ -5,6 +5,8 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY ./requirements/base.txt /app/requirements/base.txt
+COPY ./requirements/prod.txt /app/requirements/prod.txt
 
-RUN python -m pip install -r /app/requirements/base.txt
+RUN python -m pip install -r /app/requirements/prod.txt
+
+CMD ["gunicorn"  , "-b", "0.0.0.0:$PORT", "app:main"]
