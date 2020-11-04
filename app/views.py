@@ -5,4 +5,4 @@ from app.main import app
 
 @app.route("/")
 def read_root():
-    return jsonify([])
+    return jsonify({'response': 'ok'})
