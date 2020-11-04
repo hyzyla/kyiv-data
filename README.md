@@ -26,3 +26,9 @@ docker-compose run app db upgrade
 ```
 sudo chown -R $USER migrations
 ```
+
+## Deploy
+```
+git push dokku main:master
+```
+
