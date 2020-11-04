@@ -11,4 +11,6 @@ COPY ./requirements/prod.txt /app/requirements/prod.txt
 
 RUN python -m pip install -r /app/requirements/prod.txt
 
-CMD ["gunicorn"  , "-b", "0.0.0.0:7070", "app.main:app"]
+ADD . .
+
+CMD ["gunicorn"  , "-b", "0.0.0.0:7070", "--pythonpath", "/app", "app.main:app"]
