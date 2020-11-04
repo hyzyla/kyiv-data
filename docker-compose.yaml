@@ -39,6 +39,13 @@ services:
       POSTGRES_USER: admin
       POSTGRES_DB: kyiv-data-database
 
+  prod:
+    <<: *app-python
+    build:
+      context: .
+      dockerfile: docker/prod.dockerfile
+    ports: ['7070:7070']
+
   flake8:
     <<: *app-tools
     entrypoint: flake8 app
