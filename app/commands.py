@@ -10,8 +10,8 @@ from app.main import app, db
 from app.models import Ticket
 
 PAGE_SIZE = 1000
-TICKETS_URL = f'{settings.CC_HOST}/api/tickets/search'
-TICKETS_PROGRESS_URL = f'{settings.CC_HOST}/api/ticket-progress/{{ticket_id}}'
+TICKETS_URL = f'https://{settings.CC_HOST}/api/tickets/search'
+TICKETS_PROGRESS_URL = f'https://{settings.CC_HOST}/api/ticket-progress/{{ticket_id}}'
 
 MONTH_MAP = {
     'Січень': 1,
