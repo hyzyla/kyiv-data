@@ -75,9 +75,16 @@ def _process_page_tickets(page, last_id: int):
         if last_id and item['id'] <= last_id:
             continue
         ticket = Ticket(
-            number=item['number'],
-            text=item['description'],
             external_id=item['id'],
+            number=item['number'],
+            title=item['title'],
+            text=item['description'],
+            status=item['status'],
+            address=item['address'],
+            work_taken_by=item['work_taken_by'],
+            approx_done_date=item['approx_done_date'],
+            created_at=item['created_at'],
+            subject_id=item['subject']['id'],
             meta=item,
         )
         new_tickets.append(ticket)
