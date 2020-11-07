@@ -18,6 +18,7 @@ def search():
         db.session
         .query(Ticket)
         .filter(*filters)
+        .order_by(Ticket.number)
         .paginate(error_out=False, max_per_page=1000)
     )
     return tickets_schema.dumps(tickets_page)
