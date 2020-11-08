@@ -1,5 +1,8 @@
 import logging
 import csv
+import re
+import sqlalchemy as sa
+
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from typing import Dict, List, Optional
@@ -169,11 +172,11 @@ def load_streets_data():
                 data[key] = value or None
             streets.append(data)
 
-    statement = pg_insert(Street).values(streets[500:600])
+    statement = pg_insert(Street).values(streets)
     statement = statement.on_conflict_do_update(
         constraint='streets_pkey',
         set_={
-            'name': statement.excluded.name,
+            'name': sa.func.trim(statement.excluded.name),
             'category': statement.excluded.category,
             'district': statement.excluded.district,
             'document': statement.excluded.document,
@@ -187,3 +190,43 @@ def load_streets_data():
     )
     db.session.execute(statement)
     db.session.commit()
+
+
+def split_address(address: str):
+    address = address.lower()
+    cyrillic_re = r'[а-яА-ЯЇїІіЄєҐґ’\d\w\"|\'|\.]'
+    name_re = fr'({cyrillic_re}({cyrillic_re}|-|\s)+{cyrillic_re})'
+    type_re = fr'(просп.|вул.|Вул.|пл.|пров.|бульв.|шосе|наб.|дорога|туп.|узвіз|проїзд)'
+    old_re = fr'({name_re}\s*(\,\s*{name_re}\s*)*\))'
+    number_re = fr'.*'
+    pattern_re = (
+        fr'^'  # World start
+        fr'('
+        fr'((?P<type_l>{type_re})\s*((?P<name_l>{name_re})\s*(?P<old_l>\{old_re}?))|'
+        fr'(((?P<name_r>{name_re})\s*(?P<old_r>\{old_re}?)\s*(?P<type_r>{type_re}))\s*'
+        fr')'
+        fr'\,\s*'
+        fr'{number_re}'  # building number
+        fr'$'  # Word end
+    )
+
+    r = re.compile(pattern_re, re.IGNORECASE)
+    result = [m.groupdict() for m in r.finditer(address)]
+    if len(result) != 1:
+        raise ValueError(address)
+    item = result[0]
+    b = {
+        'type': item['type_l'] or item['type_r'],
+        'name': item['name_l'] or item['name_r'],
+        'old': item['old_l'] or item['old_r'],
+    }
+    streets = db.session.query(Street).filter(Street.name.ilike(b['name'])).all()
+    if len(streets) == 0:
+        print(streets, b['name'])
+
+
+@app.cli.command()
+def test():
+    tickets = db.session.query(Ticket).filter(Ticket.address.isnot(None)).all()
+    for ticket in tickets:
+        split_address(ticket.address)
