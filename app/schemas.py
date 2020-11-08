@@ -17,6 +17,7 @@ class TicketSchema(ma.SQLAlchemySchema):
     approx_done_date = ma.auto_field()
     created_at = ma.auto_field()
     subject_id = ma.auto_field()
+    district_id = ma.auto_field()
 
 
 class PageSchema(ma.Schema):
