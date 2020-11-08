@@ -27,6 +27,8 @@ class Ticket(db.Model):
     created_at = Column(DateTime)
     subject_id = Column(Text)
 
+    district_id = Column(Text, nullable=True)
+
     # All data saved in JSON
     meta = Column(JSONB)
 

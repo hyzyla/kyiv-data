@@ -1,6 +1,8 @@
 import logging
 import csv
 import re
+from time import sleep
+
 import sqlalchemy as sa
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -10,6 +12,7 @@ from typing import Dict, List, Optional
 import requests
 
 from app.config import settings
+from app.constants import DISTRICTS
 from app.db import select_last_ticket
 from app.main import app, db
 from app.models import Ticket, Street
@@ -50,7 +53,11 @@ STREET_CSV_MAP = {
 logger = logging.getLogger(__name__)
 
 
-def _fetch_tickets_page(page_num: int = 1):
+def _fetch_tickets_page(
+    page_num: int = 1,
+    districts_ids: Optional[List[str]] = None,
+    tickets_ids: Optional[List[str]] = None,
+):
     logger.info(f'Fetch page {page_num}')
 
     response = requests.get(
@@ -59,23 +66,27 @@ def _fetch_tickets_page(page_num: int = 1):
             'per_page': PAGE_SIZE,
             'page': page_num,
             'include[]': ['rate', 'files'],
+            'ticket_ids[]': tickets_ids,
+            'district_ids[]': districts_ids,
         },
     )
+    if int(response.headers['X-RateLimit-Remaining']) < 2:
+        sleep(60)
     response.raise_for_status()
     return response.json()
 
 
-def _fetch_last_ticket_page():
-    page = _fetch_tickets_page()
+def _fetch_last_ticket_page(districts_ids: Optional[List[str]] = None):
+    page = _fetch_tickets_page(districts_ids=districts_ids)
     total_pages = page['meta']['pagination']['total_pages']
-    return _fetch_tickets_page(page_num=total_pages)
+    return _fetch_tickets_page(page_num=total_pages, districts_ids=districts_ids)
 
 
-def _fetch_last_processed_page(ticket_id: int):
+def _fetch_last_processed_page(ticket_id: int, districts_ids: Optional[List[str]] = None):
     page_num = 1
 
     while True:
-        page = _fetch_tickets_page(page_num)
+        page = _fetch_tickets_page(page_num, districts_ids=districts_ids)
         items = page['data']
         if not items:
             raise ValueError()
@@ -112,6 +123,21 @@ def _process_page_tickets(page, last_id: int):
     db.session.commit()
 
 
+def _process_district_tickets_page(page, last_id: int, district_id: str):
+    tickets_ids: List[str] = []
+    for item in reversed(page['data']):
+        if last_id and item['id'] <= last_id:
+            continue
+        tickets_ids.append(item['id'])
+    (
+        db.session
+        .query(Ticket)
+        .filter(Ticket.external_id.in_(tickets_ids))
+        .update({'district_id': district_id}, synchronize_session=False)
+    )
+    db.session.commit()
+
+
 def _fetch_ticket_progress(ticket_id: str):
     response = requests.get(url=TICKETS_PROGRESS_URL.format(ticket_id))
     response.raise_for_status()
@@ -145,9 +171,39 @@ def get_new_tickets():
         current_page: int = page['meta']['pagination']['current_page'] - 1
         if current_page <= 0:
             logger.info('Last page processed')
-            return
+            break
 
         page = _fetch_tickets_page(current_page)
+
+    get_districts_tickets()
+
+
+def get_district_tickets(district_id: str):
+    ticket = select_last_ticket(district_id)
+    last_id: Optional[int] = ticket and int(ticket.external_id)
+
+    if not ticket:
+        page = _fetch_last_ticket_page([district_id])
+    else:
+        page = _fetch_last_processed_page(last_id, [district_id])
+
+    while True:
+        _process_district_tickets_page(page, last_id, district_id)
+        current_page: int = page['meta']['pagination']['current_page'] - 1
+        if current_page <= 0:
+            logger.info(f'Last district {district_id} processed')
+            return
+
+        page = _fetch_tickets_page(current_page, districts_ids=[district_id])
+
+
+@app.cli.command()
+def get_districts_tickets():
+    logger.info('Getting tickets districts')
+
+    for district in DISTRICTS:
+        district_id = str(district['id'])
+        get_district_tickets(district_id)
 
 
 @app.cli.command()
@@ -220,13 +276,11 @@ def split_address(address: str):
         'name': item['name_l'] or item['name_r'],
         'old': item['old_l'] or item['old_r'],
     }
-    streets = db.session.query(Street).filter(Street.name.ilike(b['name'])).all()
-    if len(streets) == 0:
-        print(streets, b['name'])
+    print(b)
 
 
 @app.cli.command()
-def test():
+def split_address():
     tickets = db.session.query(Ticket).filter(Ticket.address.isnot(None)).all()
     for ticket in tickets:
         split_address(ticket.address)
