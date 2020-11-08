@@ -162,27 +162,28 @@ def load_streets_data():
     with open('data/streets.csv', mode='r') as file:
         reader = csv.DictReader(file)
         for line in reader:
-            # Rename fields
-            data = {key: line[name] for key, name in STREET_CSV_MAP.items()}
+            data = {}
+            for key, name in STREET_CSV_MAP.items():
+                value = line[name]
+                value = '' if value == '-' else value
+                data[key] = value or None
             streets.append(data)
 
-    statement = pg_insert(Street).values(streets)
-    statement = (
-        statement.on_conflict_do_update(
-            constraint='streets_pkey',
-            set_={
-                'name': statement.excluded.name,
-                'category': statement.excluded.category,
-                'district': statement.excluded.district,
-                'document': statement.excluded.document,
-                'document_date': statement.excluded.document_date,
-                'document_title': statement.excluded.document_title,
-                'document_number': statement.excluded.document_number,
-                'old_category': statement.excluded.old_category,
-                'old_name': statement.excluded.old_name,
-                'comment': statement.excluded.comment,
-            }
-        )
+    statement = pg_insert(Street).values(streets[500:600])
+    statement = statement.on_conflict_do_update(
+        constraint='streets_pkey',
+        set_={
+            'name': statement.excluded.name,
+            'category': statement.excluded.category,
+            'district': statement.excluded.district,
+            'document': statement.excluded.document,
+            'document_date': statement.excluded.document_date,
+            'document_title': statement.excluded.document_title,
+            'document_number': statement.excluded.document_number,
+            'old_category': statement.excluded.old_category,
+            'old_name': statement.excluded.old_name,
+            'comment': statement.excluded.comment,
+        },
     )
     db.session.execute(statement)
     db.session.commit()

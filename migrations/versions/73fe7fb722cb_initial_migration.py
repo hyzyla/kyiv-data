@@ -25,9 +25,7 @@ def upgrade():
         sa.Column('meta', sa.JSON(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
-    op.create_index(
-        op.f('ix_tickets_external_id'), 'tickets', ['external_id'], unique=False
-    )
+    op.create_index(op.f('ix_tickets_external_id'), 'tickets', ['external_id'], unique=False)
 
 
 def downgrade():

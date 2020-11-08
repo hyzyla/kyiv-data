@@ -39,12 +39,12 @@ class Street(db.Model):
     category = Column(Text)
     district = Column(Text)
 
-    document = Column(Text)
-    document_date = Column(Text)
-    document_title = Column(Text)
-    document_number = Column(Text)
+    document = Column(Text, nullable=True)
+    document_date = Column(Text, nullable=True)
+    document_title = Column(Text, nullable=True)
+    document_number = Column(Text, nullable=True)
 
     old_category = Column(Text, nullable=True)
     old_name = Column(Text, nullable=True)
 
-    comment = Column(Text)
+    comment = Column(Text, nullable=True)
