@@ -53,7 +53,7 @@ def upgrade():
         'tickets',
         'meta',
         existing_type=postgresql.JSONB(astext_type=sa.Text()),
-        nullable=False
+        nullable=False,
     )
 
 
@@ -62,7 +62,7 @@ def downgrade():
         'tickets',
         'meta',
         existing_type=postgresql.JSONB(astext_type=sa.Text()),
-        nullable=True
+        nullable=True,
     )
     op.drop_column('tickets', 'work_taken_by')
     op.drop_column('tickets', 'title')

@@ -1,4 +1,6 @@
 import logging
+import csv
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from typing import Dict, List, Optional
 
@@ -7,7 +9,7 @@ import requests
 from app.config import settings
 from app.db import select_last_ticket
 from app.main import app, db
-from app.models import Ticket
+from app.models import Ticket, Street
 
 PAGE_SIZE = 1000
 TICKETS_URL = f'https://{settings.CC_HOST}/api/tickets/search'
@@ -25,7 +27,21 @@ MONTH_MAP = {
     'Вересень': 9,
     'Жовнеть': 10,
     'Листопад': 11,
-    'Грудень': 12
+    'Грудень': 12,
+}
+
+STREET_CSV_MAP = {
+    'comment': "Коментар",
+    'district': 'Адміністративний район',
+    'document': "Документ про присвоєння найменування об'єкта",
+    'document_date': "Дата документу про присвоєння найменування об'єкта",
+    'document_title': "Заголовок документу про присвоєння найменування об'єкта",
+    'document_number': "Номер документу про присвоєння найменування об'єкта",
+    'category': "Категорія (тип) об'єкта",
+    'old_category': "Колишня категорія (тип) об'єкта",
+    'old_name': "Колишнє найменування об'єкта",
+    'name': "Повне офіційне найменування об'єкта",
+    'id': "Унікальний цифровий код об'єкта",
 }
 
 logger = logging.getLogger(__name__)
@@ -40,7 +56,7 @@ def _fetch_tickets_page(page_num: int = 1):
             'per_page': PAGE_SIZE,
             'page': page_num,
             'include[]': ['rate', 'files'],
-        }
+        },
     )
     response.raise_for_status()
     return response.json()
@@ -136,5 +152,37 @@ def get_ticket_progress():
     ticket = select_last_ticket()
     progress = _fetch_ticket_progress(ticket.external_id)
     from pprint import pprint
+
     pprint(progress)
 
+
+@app.cli.command()
+def load_streets_data():
+    streets = []
+    with open('data/streets.csv', mode='r') as file:
+        reader = csv.DictReader(file)
+        for line in reader:
+            # Rename fields
+            data = {key: line[name] for key, name in STREET_CSV_MAP.items()}
+            streets.append(data)
+
+    statement = pg_insert(Street).values(streets)
+    statement = (
+        statement.on_conflict_do_update(
+            constraint='streets_pkey',
+            set_={
+                'name': statement.excluded.name,
+                'category': statement.excluded.category,
+                'district': statement.excluded.district,
+                'document': statement.excluded.document,
+                'document_date': statement.excluded.document_date,
+                'document_title': statement.excluded.document_title,
+                'document_number': statement.excluded.document_number,
+                'old_category': statement.excluded.old_category,
+                'old_name': statement.excluded.old_name,
+                'comment': statement.excluded.comment,
+            }
+        )
+    )
+    db.session.execute(statement)
+    db.session.commit()

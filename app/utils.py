@@ -69,4 +69,3 @@ def get_search_filters():
             filters.extend(expr)
 
     return filters
-

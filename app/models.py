@@ -29,3 +29,22 @@ class Ticket(db.Model):
 
     # All data saved in JSON
     meta = Column(JSONB)
+
+
+class Street(db.Model):
+    __tablename__ = 'streets'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(Text)
+    category = Column(Text)
+    district = Column(Text)
+
+    document = Column(Text)
+    document_date = Column(Text)
+    document_title = Column(Text)
+    document_number = Column(Text)
+
+    old_category = Column(Text, nullable=True)
+    old_name = Column(Text, nullable=True)
+
+    comment = Column(Text)

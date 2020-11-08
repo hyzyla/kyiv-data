@@ -49,7 +49,8 @@ services:
 
   black:
     <<: *app-tools
-    entrypoint: black -t py38 -S app
+    entrypoint: black --line-length 120 -t py38 -S
+    command: app
 
   alembic:
     <<: *app-tools
