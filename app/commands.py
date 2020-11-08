@@ -197,7 +197,6 @@ def get_district_tickets(district_id: str):
         page = _fetch_tickets_page(current_page, districts_ids=[district_id])
 
 
-@app.cli.command()
 def get_districts_tickets():
     logger.info('Getting tickets districts')
 
