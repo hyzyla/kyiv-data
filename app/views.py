@@ -15,6 +15,10 @@ def read_root():
 def search():
     filters = get_search_filters()
     tickets_page = (
-        db.session.query(Ticket).filter(*filters).order_by(Ticket.number).paginate(error_out=False, max_per_page=1000)
+        db.session
+        .query(Ticket)
+        .filter(*filters)
+        .order_by(Ticket.external_id.desc())
+        .paginate(error_out=False, max_per_page=10000)
     )
     return tickets_schema.dumps(tickets_page)
