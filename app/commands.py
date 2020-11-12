@@ -109,6 +109,7 @@ def _process_page_tickets(page, last_id: int):
             number=item['number'],
             title=item['title'],
             text=item['description'],
+            user_id=item['user_id'],
             status=item['status'],
             address=item['address'],
             work_taken_by=item['work_taken_by'],
