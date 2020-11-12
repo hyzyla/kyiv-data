@@ -26,6 +26,7 @@ class Ticket(db.Model):
     approx_done_date = Column(Date)
     created_at = Column(DateTime)
     subject_id = Column(Text)
+    user_id = Column(Text)
 
     district_id = Column(Text, nullable=True)
 

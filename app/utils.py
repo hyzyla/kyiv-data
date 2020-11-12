@@ -18,6 +18,7 @@ FILTER_OPTIONS = [
     (Ticket.title, 'title'),
     (Ticket.district_id, 'district_id'),
     (Ticket.work_taken_by, 'work_taken_by'),
+    (Ticket.user_id, 'user_id'),
 ]
 
 

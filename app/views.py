@@ -1,5 +1,6 @@
 from flask import jsonify
 
+from app.constants import DISTRICTS, SUBJECTS
 from app.main import app, db
 from app.models import Ticket
 from app.schemas import tickets_schema
@@ -13,12 +14,22 @@ def read_root():
 
 @app.route('/api/search')
 def search():
+
     filters = get_search_filters()
     tickets_page = (
-        db.session
-        .query(Ticket)
+        db.session.query(Ticket)
         .filter(*filters)
         .order_by(Ticket.external_id.desc())
         .paginate(error_out=False, max_per_page=10000)
     )
     return tickets_schema.dumps(tickets_page)
+
+
+@app.route('/api/districts')
+def get_districts():
+    return jsonify(DISTRICTS)
+
+
+@app.route('/api/subjects')
+def get_subjects():
+    return jsonify(SUBJECTS)

@@ -130,8 +130,7 @@ def _process_district_tickets_page(page, last_id: int, district_id: str):
             continue
         tickets_ids.append(item['id'])
     (
-        db.session
-        .query(Ticket)
+        db.session.query(Ticket)
         .filter(Ticket.external_id.in_(tickets_ids))
         .update({'district_id': district_id}, synchronize_session=False)
     )
