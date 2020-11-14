@@ -18,17 +18,17 @@ class Ticket(db.Model):
     # ID from contact center
     external_id = Column(BigInteger, index=True)
     number = Column(Text)
-    title = Column(Text)
+    title = Column(Text, index=True)
     text = Column(Text)
     status = Column(Text)
     address = Column(Text, nullable=True)
     work_taken_by = Column(Text)
     approx_done_date = Column(Date)
     created_at = Column(DateTime)
-    subject_id = Column(Text, index=True)
+    subject_id = Column(BigInteger, index=True)
     user_id = Column(Text)
 
-    district_id = Column(Text, nullable=True, index=True)
+    district_id = Column(BigInteger, nullable=True, index=True)
 
     # All data saved in JSON
     meta = Column(JSONB)

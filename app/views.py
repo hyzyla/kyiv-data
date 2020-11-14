@@ -2,7 +2,7 @@ from flask import jsonify
 
 from app.main import app, db
 from app.models import Ticket, District, Subject
-from app.schemas import tickets_schema, districts_schema, subjects_schema
+from app.schemas import tickets_schema, districts_schema, subjects_schema, titles_schema
 from app.utils import get_search_filters
 
 
@@ -26,11 +26,50 @@ def search():
 
 @app.route('/api/districts')
 def get_districts():
-    districts = db.session.query(District).all()
+    # Do not optimize without any reason for that
+    districts = (
+        db.session.query()
+        .add_columns(
+            District.id,
+            District.name,
+            db.func.count(Ticket.id).label('tickets_count')
+        )
+        .select_from(District)
+        .outerjoin(Ticket, Ticket.district_id == District.id)
+        .group_by(District.id)
+        .all()
+    )
     return districts_schema.dumps(districts)
 
 
 @app.route('/api/subjects')
 def get_subjects():
-    districts = db.session.query(Subject).all()
-    return subjects_schema.dumps(districts)
+    subjects = (
+        db.session.query()
+        .add_columns(
+            Subject.id,
+            Subject.name,
+            db.func.count(Ticket.id).label('tickets_count')
+        )
+        .select_from(Subject)
+        .outerjoin(Ticket, Ticket.subject_id == Subject.id)
+        .group_by(Subject.id)
+        .all()
+    )
+    return subjects_schema.dumps(subjects)
+
+
+@app.route('/api/titles')
+def get_titles():
+    subjects = (
+        db.session.query()
+        .add_columns(
+            Ticket.title,
+            db.func.count(Ticket.id).label('tickets_count')
+        )
+        .select_from(Ticket)
+        .group_by(Ticket.title)
+        .order_by(db.text('tickets_count DESC'))
+        .all()
+    )
+    return titles_schema.dumps(subjects)

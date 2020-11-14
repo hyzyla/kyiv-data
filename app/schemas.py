@@ -36,18 +36,26 @@ class DistrictSchema(ma.SQLAlchemySchema):
     class Meta:
         model = District
 
-    id = ma.auto_field()
-    name = ma.auto_field()
+    id = ma.String()
+    name = ma.String()
+    tickets_count = ma.Integer()
 
 
 class SubjectSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Subject
 
-    id = ma.auto_field()
-    name = ma.auto_field()
+    id = ma.String()
+    name = ma.String()
+    tickets_count = ma.Integer()
+
+
+class TitlesSchema(ma.Schema):
+    title = ma.String(dump_only=True)
+    tickets_count = ma.Integer(dump_only=True)
 
 
 tickets_schema = TicketPageSchema()
 districts_schema = DistrictSchema(many=True)
 subjects_schema = SubjectSchema(many=True)
+titles_schema = TitlesSchema(many=True)
