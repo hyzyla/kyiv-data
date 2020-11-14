@@ -1,9 +1,8 @@
 from flask import jsonify
 
-from app.constants import DISTRICTS, SUBJECTS
 from app.main import app, db
-from app.models import Ticket
-from app.schemas import tickets_schema
+from app.models import Ticket, District, Subject
+from app.schemas import tickets_schema, districts_schema, subjects_schema
 from app.utils import get_search_filters
 
 
@@ -27,9 +26,11 @@ def search():
 
 @app.route('/api/districts')
 def get_districts():
-    return jsonify(DISTRICTS)
+    districts = db.session.query(District).all()
+    return districts_schema.dumps(districts)
 
 
 @app.route('/api/subjects')
 def get_subjects():
-    return jsonify(SUBJECTS)
+    districts = db.session.query(Subject).all()
+    return subjects_schema.dumps(districts)

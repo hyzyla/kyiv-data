@@ -25,13 +25,27 @@ class Ticket(db.Model):
     work_taken_by = Column(Text)
     approx_done_date = Column(Date)
     created_at = Column(DateTime)
-    subject_id = Column(Text)
+    subject_id = Column(Text, index=True)
     user_id = Column(Text)
 
-    district_id = Column(Text, nullable=True)
+    district_id = Column(Text, nullable=True, index=True)
 
     # All data saved in JSON
     meta = Column(JSONB)
+
+
+class District(db.Model):
+    __tablename__ = 'districts'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(Text)
+
+
+class Subject(db.Model):
+    __tablename__ = 'subjects'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(Text)
 
 
 class Street(db.Model):
