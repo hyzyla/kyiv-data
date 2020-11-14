@@ -20,8 +20,8 @@ def upgrade():
     op.execute(
         """
         ALTER TABLE tickets
-            ALTER COLUMN subject_id TYPE bigint USING id::bigint,
-            ALTER COLUMN district_id TYPE bigint USING external_id::bigint;
+            ALTER COLUMN subject_id TYPE bigint USING subject_id::bigint,
+            ALTER COLUMN district_id TYPE bigint USING district_id::bigint;
         """
     )
 
@@ -30,7 +30,7 @@ def downgrade():
     op.execute(
         """
         ALTER TABLE tickets
-            ALTER COLUMN subject_id TYPE text USING id::text,
-            ALTER COLUMN district_id TYPE text USING external_id::text;
+            ALTER COLUMN subject_id TYPE text USING subject_id::text,
+            ALTER COLUMN district_id TYPE text USING district_id::text;
         """
     )
