@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import redirect
 
 from app.main import app, db
 from app.models import Ticket, District, Subject
@@ -8,7 +8,7 @@ from app.utils import get_search_filters
 
 @app.route("/")
 def read_root():
-    return jsonify({'world': 'OK!'})
+    return redirect('/admin/ticket')
 
 
 @app.route('/api/search')
