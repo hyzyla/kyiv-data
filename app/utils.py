@@ -2,7 +2,8 @@ from typing import List, Tuple
 
 from flask import request
 
-from app.models import Column, Ticket
+from app.main import db
+from app.models import Ticket
 
 
 FILTER_OPTIONS = [
@@ -29,7 +30,7 @@ def _parse_query(query: str) -> Tuple[str, str]:
     return 'eq', query
 
 
-def _build_expressions(column: Column, name: str) -> List:
+def _build_expressions(column: db.Column, name: str) -> List:
     queries: List[str] = request.args.getlist(name)
     if queries is None:
         return []
@@ -43,7 +44,7 @@ def _build_expressions(column: Column, name: str) -> List:
     return expressions
 
 
-def _build_expression(column: Column, query: str):
+def _build_expression(column: db.Column, query: str):
     op, query = _parse_query(query)
     if op == 'eq':
         return column == query

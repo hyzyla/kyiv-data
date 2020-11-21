@@ -1,7 +1,10 @@
  - [x] JSON -> JSONB
  - [x] external_id::bigint
  - [ ] parse old tickets
- - [ ] deploy
+ - [x] deploy
  - [ ] watch tickets changes
- - [ ] rate limit waiter
+ - [x] rate limit waiter
+ - [ ] create ticket API
+ - [ ] city field
+ - [ ] fix district errors
  

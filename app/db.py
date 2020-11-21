@@ -1,7 +1,7 @@
 from typing import Optional
 
 from app.main import db
-from app.models import Ticket
+from app.models import Ticket, City
 
 
 def select_last_ticket(district_id: Optional[str] = None) -> Optional[Ticket]:
@@ -10,3 +10,7 @@ def select_last_ticket(district_id: Optional[str] = None) -> Optional[Ticket]:
         query = query.filter(Ticket.district_id == district_id)
 
     return query.order_by(Ticket.external_id.desc()).first()
+
+
+def get_kyiv() -> City:
+    return db.session.query(City).filter(City.name == 'Київ').first()

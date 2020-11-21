@@ -13,7 +13,8 @@ import requests
 
 from app.config import settings
 from app.constants import DISTRICTS
-from app.db import select_last_ticket
+from app.db import select_last_ticket, get_kyiv
+from app.enums import TicketSource
 from app.main import app, db
 from app.models import Ticket, Street
 
@@ -101,6 +102,9 @@ def _fetch_last_processed_page(ticket_id: int, districts_ids: Optional[List[str]
 
 def _process_page_tickets(page, last_id: int):
     new_tickets: List[Ticket] = []
+
+    kyiv = get_kyiv()
+
     for item in reversed(page['data']):
         if last_id and item['id'] <= last_id:
             continue
@@ -116,6 +120,8 @@ def _process_page_tickets(page, last_id: int):
             approx_done_date=item['approx_done_date'],
             created_at=item['created_at'],
             subject_id=item['subject']['id'],
+            city=kyiv,
+            source=TicketSource.cc1551,
             meta=item,
         )
         new_tickets.append(ticket)

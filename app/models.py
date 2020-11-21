@@ -1,67 +1,75 @@
 from sqlalchemy import BigInteger, Text, DateTime, Date
 from sqlalchemy.dialects.postgresql import JSONB
 
+from app.enums import TicketSource
+from app.lib.db import SoftEnum
 from app.main import db
-
-
-class Column(db.Column):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('nullable', False)
-        super().__init__(*args, **kwargs)
 
 
 class Ticket(db.Model):
     __tablename__ = 'tickets'
 
-    id = Column(BigInteger, primary_key=True)
+    id = db.Column(BigInteger, primary_key=True,)
 
     # ID from contact center
-    external_id = Column(BigInteger, index=True)
-    number = Column(Text)
-    title = Column(Text, index=True)
-    text = Column(Text)
-    status = Column(Text)
-    address = Column(Text, nullable=True)
-    work_taken_by = Column(Text)
-    approx_done_date = Column(Date)
-    created_at = Column(DateTime)
-    subject_id = Column(BigInteger, index=True)
-    user_id = Column(Text)
+    external_id = db.Column(BigInteger, nullable=False, index=True)
+    number = db.Column(Text, nullable=False)
+    title = db.Column(Text, nullable=False, index=True)
+    text = db.Column(Text, nullable=False)
+    status = db.Column(Text, nullable=False)
+    address = db.Column(Text)
+    work_taken_by = db.Column(Text, nullable=False)
+    approx_done_date = db.Column(Date, nullable=False)
+    created_at = db.Column(DateTime, nullable=False)
+    subject_id = db.Column(BigInteger, nullable=False, index=True)
+    user_id = db.Column(Text, nullable=False)
 
-    district_id = Column(BigInteger, nullable=True, index=True)
+    district_id = db.Column(BigInteger, index=True)
+    city_id = db.Column(db.ForeignKey('cities.id'), nullable=False)
+    city = db.relationship('City')
+
+    source = db.Column(SoftEnum(TicketSource), nullable=False)
 
     # All data saved in JSON
-    meta = Column(JSONB)
+    meta = db.Column(JSONB, nullable=False)
 
 
 class District(db.Model):
     __tablename__ = 'districts'
 
-    id = Column(BigInteger, primary_key=True)
-    name = Column(Text)
+    id = db.Column(BigInteger, primary_key=True)
+    name = db.Column(Text, nullable=False)
+
+
+class City(db.Model):
+
+    __tablename__ = 'cities'
+
+    id = db.Column(BigInteger, primary_key=True)
+    name = db.Column(Text, nullable=False)
 
 
 class Subject(db.Model):
     __tablename__ = 'subjects'
 
-    id = Column(BigInteger, primary_key=True)
-    name = Column(Text)
+    id = db.Column(BigInteger, primary_key=True)
+    name = db.Column(Text, nullable=False)
 
 
 class Street(db.Model):
     __tablename__ = 'streets'
 
-    id = Column(BigInteger, primary_key=True)
-    name = Column(Text)
-    category = Column(Text)
-    district = Column(Text)
+    id = db.Column(BigInteger, primary_key=True)
+    name = db.Column(Text, nullable=False)
+    category = db.Column(Text, nullable=False)
+    district = db.Column(Text, nullable=False)
 
-    document = Column(Text, nullable=True)
-    document_date = Column(Text, nullable=True)
-    document_title = Column(Text, nullable=True)
-    document_number = Column(Text, nullable=True)
+    document = db.Column(Text)
+    document_date = db.Column(Text)
+    document_title = db.Column(Text)
+    document_number = db.Column(Text)
 
-    old_category = Column(Text, nullable=True)
-    old_name = Column(Text, nullable=True)
+    old_category = db.Column(Text)
+    old_name = db.Column(Text)
 
-    comment = Column(Text, nullable=True)
+    comment = db.Column(Text)
