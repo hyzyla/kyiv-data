@@ -120,7 +120,7 @@ def _process_page_tickets(page, last_id: int):
             approx_done_date=item['approx_done_date'],
             created_at=item['created_at'],
             subject_id=item['subject']['id'],
-            city=kyiv,
+            city_id=kyiv.id,
             source=TicketSource.cc1551,
             meta=item,
         )
