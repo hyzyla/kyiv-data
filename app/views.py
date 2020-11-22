@@ -98,13 +98,13 @@ def create_ticket():
     return api_response(ticket_schema.dumps(ticket), status=HTTPStatus.CREATED)
 
 
-@app.route('/api/tickets/<int:ticket_id>', methods=["GET"])
+@app.route('/api/tickets/<int:ticket_id>', methods=['GET'])
 def get_ticket(ticket_id):
-    ticket = db.session.query(Ticket).first_or_404(ticket_id)
+    ticket = db.session.query(Ticket).filter(Ticket.id == ticket_id).first_or_404()
     return api_response(ticket_schema.dumps(ticket))
 
 
-@app.route('/api/tickets/<int:ticket_id>', methods=["DELETE"])
+@app.route('/api/tickets/<int:ticket_id>', methods=['DELETE'])
 @login_required
 def delete_note(ticket_id):
     ticket = db.session.query(Ticket).first_or_404(ticket_id)
