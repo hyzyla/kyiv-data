@@ -5,6 +5,6 @@
  - [ ] watch tickets changes
  - [x] rate limit waiter
  - [ ] create ticket API
- - [ ] city field
+ - [x] city field
  - [ ] fix district errors
- 
+ - [ ] remove pydantic

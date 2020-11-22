@@ -1,3 +1,6 @@
+from marshmallow import post_load
+
+from app.enums import TicketSource
 from app.main import ma
 from app.models import Ticket, District, Subject
 
@@ -26,6 +29,12 @@ class TicketSchema(ma.SQLAlchemySchema):
     created_at = ma.auto_field()
     subject_id = ma.auto_field()
     district_id = ma.auto_field()
+    city_id = ma.auto_field()
+    source = ma.auto_field()
+
+    @post_load
+    def _(self, data, **kwargs):
+        return {**data, 'source': TicketSource(data['source']), 'meta': {}}
 
 
 class TicketPageSchema(PageSchema):
@@ -55,6 +64,7 @@ class TitlesSchema(ma.Schema):
     tickets_count = ma.Integer(dump_only=True)
 
 
+ticket_schema = TicketSchema()
 tickets_schema = TicketPageSchema()
 districts_schema = DistrictSchema(many=True)
 subjects_schema = SubjectSchema(many=True)

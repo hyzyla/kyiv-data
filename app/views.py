@@ -1,9 +1,21 @@
-from flask import redirect
+from http import HTTPStatus
 
+from flask import redirect, request, jsonify, abort
+
+from app import utils, validators
+from app.lib.errors import BaseError
 from app.main import app, db
 from app.models import Ticket, District, Subject
-from app.schemas import tickets_schema, districts_schema, subjects_schema, titles_schema
+from app.schemas import tickets_schema, districts_schema, subjects_schema, \
+    titles_schema, ticket_schema
 from app.utils import get_search_filters
+
+
+@app.errorhandler(BaseError)
+def handle_base_error(error: BaseError):
+    response = jsonify(error.to_dict())
+    response.status_code = error.code
+    return response
 
 
 @app.route("/")
@@ -75,3 +87,25 @@ def get_titles():
         .all()
     )
     return titles_schema.dumps(subjects)
+
+
+@app.route('/api/tickets', methods=['POST'])
+def create_ticket():
+    data = validators.create_ticket()
+    ticket = utils.create_ticket(data)
+    return ticket_schema.dump(ticket), HTTPStatus.CREATED
+
+
+@app.route('/api/tickets/<int:ticket_id>', methods=["GET"])
+def get_ticket(ticket_id):
+    ticket = db.session.query(Ticket).first_or_404(ticket_id)
+    return ticket_schema.dumps(ticket), HTTPStatus.OK
+
+
+@app.route('/api/tickets/<int:ticket_id>', methods=["DELETE"])
+def delete_note(ticket_id):
+    ticket = db.session.query(Ticket).first_or_404(ticket_id)
+    db.session.delete(ticket)
+    db.session.commit()
+    return '', HTTPStatus.NO_CONTENT
+

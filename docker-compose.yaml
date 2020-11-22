@@ -19,6 +19,8 @@ x-tools: &app-tools
   build:
     context: .
     dockerfile: docker/tools.dockerfile
+  environment:
+    - FLASK_APP=app.main:app
   image: kyiv-data-tools
   volumes: [ '.:/app' ]
 
@@ -39,6 +41,14 @@ services:
       POSTGRES_USER: admin
       POSTGRES_DB: kyiv-data-database
 
+  db-test:
+    image: postgres:13
+    container_name: kyiv-data-db-test
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: kyiv-data-test-database
+
   flake8:
     <<: *app-tools
     entrypoint: flake8 app
@@ -56,6 +66,20 @@ services:
     <<: *app-tools
     entrypoint: alembic
     depends_on: ['db']
+
+  pytest:
+    <<: *app-tools
+    env_file:
+      - config/test/test.env
+    depends_on: ['db-test']
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        chmod +x ./scripts/wait-for-it.sh &&
+        ./scripts/wait-for-it.sh db-test:5432 -- flask db upgrade &&
+        pytest "$$@"
+      - /bin/sh
 
   pip-compile:
     <<: *app-tools

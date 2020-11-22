@@ -4,7 +4,7 @@ from flask import request
 
 from app.main import db
 from app.models import Ticket
-
+from app.schemas import TicketSchema
 
 FILTER_OPTIONS = [
     (Ticket.number, 'number'),
@@ -72,3 +72,27 @@ def get_search_filters():
             filters.extend(expr)
 
     return filters
+
+
+def create_ticket(data: Ticket) -> Ticket:
+    ticket = Ticket(
+        **data,
+        # external_id=data.external_id,
+        # number=data.number,
+        # title=data.title,
+        # text=data.text,
+        # status=data.status,
+        # address=data.address,
+        # work_taken_by=data.work_taken_by,
+        # approx_done_date=data.approx_done_date,
+        # created_at=data.created_at,
+        # subject_id=data.subject_id,
+        # user_id=data.user_id,
+        # district_id=data.district_id,
+        # city_id=data.city_id,
+        # source=data.source,
+        # meta=data.meta,
+    )
+    db.session.add(ticket)
+    db.session.commit()
+    return ticket
