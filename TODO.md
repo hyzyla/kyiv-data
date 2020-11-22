@@ -4,7 +4,7 @@
  - [x] deploy
  - [ ] watch tickets changes
  - [x] rate limit waiter
- - [ ] create ticket API
+ - [x] create ticket API
  - [x] city field
  - [ ] fix district errors
  - [ ] remove pydantic
