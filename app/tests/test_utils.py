@@ -1,10 +1,8 @@
-from app.main import db
-from flask.testing import FlaskClient
 from sqlalchemy.sql.functions import now
 
 from app.enums import TicketSource
 from app.main import db
-from app.models import Ticket, City
+from app.models import Ticket, City, Subject, District
 
 
 def prepare_ticket(
@@ -51,3 +49,17 @@ def prepare_city(name: str = 'Київ') -> City:
     db.session.add(city)
     db.session.commit()
     return city
+
+
+def prepare_subject(name: str = 'Test subject') -> Subject:
+    subject = Subject(name=name)
+    db.session.add(subject)
+    db.session.commit()
+    return subject
+
+
+def prepare_district(name: str = 'Test district') -> District:
+    district = District(name=name)
+    db.session.add(district)
+    db.session.commit()
+    return district

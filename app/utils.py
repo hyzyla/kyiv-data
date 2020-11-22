@@ -1,8 +1,13 @@
+from datetime import datetime
+from http import HTTPStatus
 from typing import List, Tuple
-
+from functools import wraps
 from flask import request
 
-from app.main import db
+from app.config import settings
+from app.lib.errors import InvalidTokenError
+from app.lib.types import DataDict
+from app.main import db, app
 from app.models import Ticket
 from app.schemas import TicketSchema
 
@@ -74,25 +79,28 @@ def get_search_filters():
     return filters
 
 
-def create_ticket(data: Ticket) -> Ticket:
-    ticket = Ticket(
-        **data,
-        # external_id=data.external_id,
-        # number=data.number,
-        # title=data.title,
-        # text=data.text,
-        # status=data.status,
-        # address=data.address,
-        # work_taken_by=data.work_taken_by,
-        # approx_done_date=data.approx_done_date,
-        # created_at=data.created_at,
-        # subject_id=data.subject_id,
-        # user_id=data.user_id,
-        # district_id=data.district_id,
-        # city_id=data.city_id,
-        # source=data.source,
-        # meta=data.meta,
-    )
+def create_ticket(data: DataDict) -> Ticket:
+    ticket = Ticket(**data, created_at=datetime.utcnow())
     db.session.add(ticket)
     db.session.commit()
     return ticket
+
+
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        if request.headers.get('Authorization') != settings.AUTH_TOKEN:
+            raise InvalidTokenError()
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def api_response(data: str, status: int = HTTPStatus.OK):
+    return app.response_class(
+        response=data,
+        status=status,
+        mimetype='application/json',
+    )

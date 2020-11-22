@@ -9,7 +9,10 @@ from app.main import db
 class Ticket(db.Model):
     __tablename__ = 'tickets'
 
-    id = db.Column(BigInteger, primary_key=True,)
+    id = db.Column(
+        BigInteger,
+        primary_key=True,
+    )
 
     # ID from contact center
     external_id = db.Column(BigInteger, nullable=False, index=True)

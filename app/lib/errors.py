@@ -12,14 +12,13 @@ class BaseError(Exception):
         self.data = data
 
     def to_dict(self) -> DataDict:
-        return {
-            'message': self.message,
-            'code': self.code,
-            'extra': self.data
-        }
+        return {'message': self.message, 'code': self.code, 'extra': self.data}
+
+
+class InvalidTokenError(BaseError):
+    message = 'Невалідний токен доступу'
+    code = HTTPStatus.FORBIDDEN
 
 
 class SchemaValidatorError(BaseError):
     message = 'Запит не відповідає схемі'
-
-

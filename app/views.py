@@ -1,14 +1,20 @@
 from http import HTTPStatus
 
-from flask import redirect, request, jsonify, abort
+from flask import redirect, jsonify
 
 from app import utils, validators
 from app.lib.errors import BaseError
 from app.main import app, db
-from app.models import Ticket, District, Subject
-from app.schemas import tickets_schema, districts_schema, subjects_schema, \
-    titles_schema, ticket_schema
-from app.utils import get_search_filters
+from app.models import Ticket, District, Subject, City
+from app.schemas import (
+    tickets_schema,
+    districts_schema,
+    subjects_schema,
+    titles_schema,
+    ticket_schema,
+    cities_schema,
+)
+from app.utils import get_search_filters, login_required, api_response
 
 
 @app.errorhandler(BaseError)
@@ -33,7 +39,7 @@ def search():
         .order_by(Ticket.external_id.desc())
         .paginate(error_out=False, max_per_page=10000)
     )
-    return tickets_schema.dumps(tickets_page)
+    return api_response(tickets_schema.dumps(tickets_page))
 
 
 @app.route('/api/districts')
@@ -41,71 +47,67 @@ def get_districts():
     # Do not optimize without any reason for that
     districts = (
         db.session.query()
-        .add_columns(
-            District.id,
-            District.name,
-            db.func.count(Ticket.id).label('tickets_count')
-        )
+        .add_columns(District.id, District.name, db.func.count(Ticket.id).label('tickets_count'))
         .select_from(District)
         .outerjoin(Ticket, Ticket.district_id == District.id)
         .group_by(District.id)
         .order_by(db.text('tickets_count DESC'))
         .all()
     )
-    return districts_schema.dumps(districts)
+    return api_response(districts_schema.dumps(districts))
 
 
 @app.route('/api/subjects')
 def get_subjects():
     subjects = (
         db.session.query()
-        .add_columns(
-            Subject.id,
-            Subject.name,
-            db.func.count(Ticket.id).label('tickets_count')
-        )
+        .add_columns(Subject.id, Subject.name, db.func.count(Ticket.id).label('tickets_count'))
         .select_from(Subject)
         .outerjoin(Ticket, Ticket.subject_id == Subject.id)
         .group_by(Subject.id)
         .order_by(db.text('tickets_count DESC'))
         .all()
     )
-    return subjects_schema.dumps(subjects)
+    return api_response(subjects_schema.dumps(subjects))
 
 
 @app.route('/api/titles')
 def get_titles():
     subjects = (
         db.session.query()
-        .add_columns(
-            Ticket.title,
-            db.func.count(Ticket.id).label('tickets_count')
-        )
+        .add_columns(Ticket.title, db.func.count(Ticket.id).label('tickets_count'))
         .select_from(Ticket)
         .group_by(Ticket.title)
         .order_by(db.text('tickets_count DESC'))
         .all()
     )
-    return titles_schema.dumps(subjects)
+    return api_response(titles_schema.dumps(subjects))
+
+
+@app.route('/api/cities')
+def get_cities():
+    cities = db.session.query(City).all()
+    return api_response(cities_schema.dumps(cities))
 
 
 @app.route('/api/tickets', methods=['POST'])
+@login_required
 def create_ticket():
     data = validators.create_ticket()
     ticket = utils.create_ticket(data)
-    return ticket_schema.dump(ticket), HTTPStatus.CREATED
+    return api_response(ticket_schema.dumps(ticket), status=HTTPStatus.CREATED)
 
 
 @app.route('/api/tickets/<int:ticket_id>', methods=["GET"])
 def get_ticket(ticket_id):
     ticket = db.session.query(Ticket).first_or_404(ticket_id)
-    return ticket_schema.dumps(ticket), HTTPStatus.OK
+    return api_response(ticket_schema.dumps(ticket))
 
 
 @app.route('/api/tickets/<int:ticket_id>', methods=["DELETE"])
+@login_required
 def delete_note(ticket_id):
     ticket = db.session.query(Ticket).first_or_404(ticket_id)
     db.session.delete(ticket)
     db.session.commit()
     return '', HTTPStatus.NO_CONTENT
-

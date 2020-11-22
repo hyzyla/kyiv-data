@@ -17,11 +17,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = settings.DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 
-sentry_sdk.init(
-    dsn=settings.SENTRY_DSN,
-    integrations=[FlaskIntegration()],
-    traces_sample_rate=1.0
-)
+sentry_sdk.init(dsn=settings.SENTRY_DSN, integrations=[FlaskIntegration()], traces_sample_rate=1.0)
 
 admin = Admin(app, name='Kyiv data', template_mode='bootstrap3')
 db = SQLAlchemy(app)

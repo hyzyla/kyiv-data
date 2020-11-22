@@ -13,4 +13,3 @@ def client():
     tables = ', '.join(db.metadata.tables)
     db.session.execute(f'TRUNCATE {tables} CASCADE;')
     db.session.commit()
-
