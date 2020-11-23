@@ -30,7 +30,11 @@ def test_base_search(client):
     response = client.get('/api/search')
     assert response.status_code == HTTPStatus.OK, response.data
 
-    TestCase().assertEqual(
+    from pprint import pprint
+    pprint(response.json)
+    case = TestCase()
+    case.maxDiff = None
+    case.assertEqual(
         response.json,
         {
             **page,
@@ -97,7 +101,7 @@ def test_delete_ticket(client: FlaskClient):
     assert response.status_code == HTTPStatus.FORBIDDEN, response.data
 
     response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.NO_CONTENT, response.data
+    assert response.status_code == HTTPStatus.OK, response.data
 
     response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
     assert response.status_code == HTTPStatus.NOT_FOUND, response.data
@@ -106,7 +110,7 @@ def test_delete_ticket(client: FlaskClient):
 @pytest.mark.parametrize(
     'headers, status',
     [
-        (AUTH_HEADERS, HTTPStatus.CREATED),
+        (AUTH_HEADERS, HTTPStatus.OK),
         ({'Authorization': 'wrong'}, HTTPStatus.FORBIDDEN),
         (None, HTTPStatus.FORBIDDEN),
     ],

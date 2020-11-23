@@ -95,7 +95,7 @@ def get_cities():
 def create_ticket():
     data = validators.create_ticket()
     ticket = utils.create_ticket(data)
-    return api_response(ticket_schema.dumps(ticket), status=HTTPStatus.CREATED)
+    return api_response(ticket_schema.dumps(ticket), status=HTTPStatus.OK)
 
 
 @app.route('/api/tickets/<int:ticket_id>', methods=['GET'])
@@ -110,4 +110,4 @@ def delete_note(ticket_id):
     ticket = db.session.query(Ticket).filter(Ticket.id == ticket_id).first_or_404()
     db.session.delete(ticket)
     db.session.commit()
-    return '', HTTPStatus.NO_CONTENT
+    return '', HTTPStatus.OK

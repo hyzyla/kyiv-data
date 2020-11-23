@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy.sql.functions import now
 
 from app.enums import TicketSource
@@ -30,7 +32,7 @@ def prepare_ticket(
         status=status,
         address=address,
         work_taken_by=work_taken_by,
-        approx_done_date=approx_done_date or now(),
+        approx_done_date=approx_done_date or date(year=2020, day=22, month=11),
         created_at=created_at or now(),
         subject_id=subject_id,
         user_id=user_id,
