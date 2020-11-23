@@ -91,12 +91,16 @@ def test_delete_ticket(client: FlaskClient):
     assert response.status_code == HTTPStatus.NOT_FOUND, response.data
 
     city = prepare_city()
-    ticket = prepare_ticket(city_id=city.id)
-    response = client.delete(f'/api/tickets/{ticket.id}')
+    ticket1 = prepare_ticket(city_id=city.id)
+    ticket2 = prepare_ticket(city_id=city.id)
+    response = client.delete(f'/api/tickets/{ticket2.id}')
     assert response.status_code == HTTPStatus.FORBIDDEN, response.data
 
-    response = client.delete(f'/api/tickets/{ticket.id}', headers=AUTH_HEADERS)
+    response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
     assert response.status_code == HTTPStatus.NO_CONTENT, response.data
+
+    response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.data
 
 
 @pytest.mark.parametrize(

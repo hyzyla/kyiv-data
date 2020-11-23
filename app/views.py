@@ -107,7 +107,7 @@ def get_ticket(ticket_id):
 @app.route('/api/tickets/<int:ticket_id>', methods=['DELETE'])
 @login_required
 def delete_note(ticket_id):
-    ticket = db.session.query(Ticket).first_or_404(ticket_id)
+    ticket = db.session.query(Ticket).filter(Ticket.id == ticket_id).first_or_404()
     db.session.delete(ticket)
     db.session.commit()
     return '', HTTPStatus.NO_CONTENT
