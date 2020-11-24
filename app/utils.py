@@ -9,7 +9,6 @@ from app.lib.errors import InvalidTokenError
 from app.lib.types import DataDict
 from app.main import db, app
 from app.models import Ticket
-from app.schemas import TicketSchema
 
 FILTER_OPTIONS = [
     (Ticket.number, 'number'),
@@ -22,6 +21,7 @@ FILTER_OPTIONS = [
     (Ticket.status, 'status'),
     (Ticket.subject_id, 'subject_id'),
     (Ticket.title, 'title'),
+    (Ticket.source, 'source'),
     (Ticket.district_id, 'district_id'),
     (Ticket.work_taken_by, 'work_taken_by'),
     (Ticket.user_id, 'user_id'),

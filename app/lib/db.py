@@ -24,4 +24,6 @@ class SoftEnum(sa.TypeDecorator):
     ) -> Optional[str]:
         if enum_ is None:
             return None
+        if isinstance(enum_, str):
+            return enum_
         return enum_.value
