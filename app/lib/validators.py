@@ -12,6 +12,9 @@ T = TypeVar('T', bound=Schema)
 
 def validate_request_json(schema: T) -> DataDict:
     """ Validate request data by schema """
+    _data = request.data
+    print(f'Request data {type(_data)}: {_data}')
+    print(f'Request headers {request.headers}')
     data = request.get_json(force=True)
     app.logger.info(f'JSON data {type(data)}: {data}')
     print(f'JSON data {type(data)}: {data}')
