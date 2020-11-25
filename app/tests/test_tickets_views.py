@@ -11,7 +11,18 @@ from app.tests.test_utils import (
     prepare_district,
 )
 
-AUTH_HEADERS = {'Authorization': 'super-secret'}
+TOKEN = (
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9vdC'
+    '1yb3V0aW5nLnZvdm5lbmtvLm5hbWVcL3NpZ25pbiIsImlhdCI6MTYwNjMyMjIyOC'
+    'wiZXhwIjoxNjA2MzI1ODI4LCJuYmYiOjE2MDYzMjIyMjgsImp0aSI6InVCVXZ4Ym'
+    'ZRVklycHdLZlIiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNz'
+    'AxYzQwMDg3MmRiN2E1OTc2ZjcifQ.62gFi0dSoW69RD1921JR1RH10j2Jur1Bvn5'
+    'kEQg8CXc'
+)
+AUTH_HEADERS = {
+    'Authorization': f'Bearer {TOKEN}',
+    'Token': 'super-secret',
+}
 
 
 def test_base_search(client):
@@ -28,7 +39,7 @@ def test_base_search(client):
     ticket2_id = ticket2.id
 
     response = client.get('/api/search')
-    assert response.status_code == HTTPStatus.OK, response.data
+    assert response.status_code == HTTPStatus.OK, response.extra
 
     from pprint import pprint
     pprint(response.json)
@@ -82,29 +93,29 @@ def test_base_search(client):
 
 def test_get_ticket(client: FlaskClient):
     response = client.get('/api/tickets/1')
-    assert response.status_code == HTTPStatus.NOT_FOUND, response.data
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.extra
 
     city = prepare_city()
     ticket = prepare_ticket(city_id=city.id)
     response = client.get(f'/api/tickets/{ticket.id}')
-    assert response.status_code == HTTPStatus.OK, response.data
+    assert response.status_code == HTTPStatus.OK, response.extra
 
 
 def test_delete_ticket(client: FlaskClient):
     response = client.delete('/api/tickets/1', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.NOT_FOUND, response.data
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.extra
 
     city = prepare_city()
     ticket1 = prepare_ticket(city_id=city.id)
     ticket2 = prepare_ticket(city_id=city.id)
     response = client.delete(f'/api/tickets/{ticket2.id}')
-    assert response.status_code == HTTPStatus.FORBIDDEN, response.data
+    assert response.status_code == HTTPStatus.FORBIDDEN, response.extra
 
     response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.OK, response.data
+    assert response.status_code == HTTPStatus.OK, response.extra
 
     response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.NOT_FOUND, response.data
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.extra
 
 
 @pytest.mark.parametrize(
@@ -127,7 +138,6 @@ def test_create_ticket(client: FlaskClient, headers, status):
             'address': 'вул. Прорізна, буд. 13',
             'number': '23',
             'status': 'В роботі',
-            'user_id': 100,
             'work_taken_by': '1',
             'subject_id': 1,
             'text': (
@@ -160,19 +170,6 @@ def test_create_ticket(client: FlaskClient, headers, status):
         'user_id': '100',
         'work_taken_by': '1',
     }
-
-
-def test_get_cities(client: FlaskClient):
-    city1 = prepare_city(name='Київ')
-    city2 = prepare_city(name='Полтава')
-    city3 = prepare_city(name='Одеса')
-    response = client.get('/api/cities')
-    assert response.status_code == HTTPStatus.OK, response.json
-    data = response.json
-
-    TestCase().assertEqual(
-        data, [{'id': city1.id, 'name': 'Київ'}, {'id': city2.id, 'name': 'Полтава'}, {'id': city3.id, 'name': 'Одеса'}]
-    )
 
 
 def test_get_titles(client):

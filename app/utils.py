@@ -2,13 +2,20 @@ from datetime import datetime
 from http import HTTPStatus
 from typing import List, Tuple
 from functools import wraps
+import re
+
+import jwt
 from flask import request
+from jwt import InvalidSignatureError
 
 from app.config import settings
 from app.lib.errors import InvalidTokenError
 from app.lib.types import DataDict
 from app.main import db, app
 from app.models import Ticket
+from app.types import UserCtx
+
+TOKEN_RE = re.compile(r'^(Bearer)?\s*(?P<token>.*)$', re.IGNORECASE)
 
 FILTER_OPTIONS = [
     (Ticket.number, 'number'),
@@ -79,21 +86,46 @@ def get_search_filters():
     return filters
 
 
-def create_ticket(data: DataDict) -> Ticket:
-    ticket = Ticket(**data, created_at=datetime.utcnow())
+def create_ticket(data: DataDict, ctx: UserCtx) -> Ticket:
+    ticket = Ticket(**data, user_id=ctx.user_id, created_at=datetime.utcnow())
     db.session.add(ticket)
     db.session.commit()
     return ticket
+
+
+def _validate_service_token():
+    token = request.headers.get('TOKEN')
+    if token != settings.AUTH_TOKEN:
+        raise InvalidTokenError(
+            message=(
+                'Не валідний сервісний токен. Передайте токен згенерований '
+                'адміністором системи у заголовку запиту TOKEN'
+            ),
+            extra={'is_token_empty': bool(bool)}
+        )
 
 
 def login_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
 
-        if request.headers.get('Authorization') != settings.AUTH_TOKEN:
+        _validate_service_token()
+
+        auth = request.headers.get('Authorization')
+        match = TOKEN_RE.match(auth)
+        token: str = match.group('token')
+        try:
+            payload = jwt.decode(
+                jwt=token,
+                algorithms='HS256',
+                verify=True,
+                options={'verify_signature': False}
+            )
+        except InvalidSignatureError():
             raise InvalidTokenError()
 
-        return func(*args, **kwargs)
+        ctx = UserCtx(user_id=payload['sub'], token=token)
+        return func(ctx, *args, **kwargs)
 
     return wrapper
 

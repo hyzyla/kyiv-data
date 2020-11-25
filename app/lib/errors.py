@@ -8,11 +8,16 @@ class BaseError(Exception):
     message: str = 'Помилка'
     code: int = HTTPStatus.BAD_REQUEST
 
-    def __init__(self, data: Optional[DataDict] = None) -> None:
-        self.data = data
+    def __init__(
+        self,
+        message: Optional[str] = None,
+        extra: Optional[DataDict] = None
+    ) -> None:
+        self.extra = extra
+        self.message = message or self.message
 
     def to_dict(self) -> DataDict:
-        return {'message': self.message, 'code': self.code, 'extra': self.data}
+        return {'message': self.message, 'code': self.code, 'extra': self.extra}
 
 
 class InvalidTokenError(BaseError):

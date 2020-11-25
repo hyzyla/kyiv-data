@@ -19,6 +19,7 @@ from app.utils import get_search_filters, login_required, api_response
 
 @app.errorhandler(BaseError)
 def handle_base_error(error: BaseError):
+    app.logger.info(f'Base error {error.to_dict()}')
     response = jsonify(error.to_dict())
     response.status_code = error.code
     return response
@@ -84,17 +85,11 @@ def get_titles():
     return api_response(titles_schema.dumps(subjects))
 
 
-@app.route('/api/cities')
-def get_cities():
-    cities = db.session.query(City).all()
-    return api_response(cities_schema.dumps(cities))
-
-
 @app.route('/api/tickets', methods=['POST'])
 @login_required
-def create_ticket():
+def create_ticket(ctx):
     data = validators.create_ticket()
-    ticket = utils.create_ticket(data)
+    ticket = utils.create_ticket(data, ctx)
     return api_response(ticket_schema.dumps(ticket), status=HTTPStatus.OK)
 
 
@@ -106,7 +101,7 @@ def get_ticket(ticket_id):
 
 @app.route('/api/tickets/<int:ticket_id>', methods=['DELETE'])
 @login_required
-def delete_note(ticket_id):
+def delete_note(ctx, ticket_id):
     ticket = db.session.query(Ticket).filter(Ticket.id == ticket_id).first_or_404()
     db.session.delete(ticket)
     db.session.commit()

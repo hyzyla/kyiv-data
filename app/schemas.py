@@ -43,7 +43,6 @@ class TicketSchema(ma.SQLAlchemySchema):
 
 class CreateTicketSchema(ma.Schema):
     external_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
-    user_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
     number = ma.String(required=True, validate=validate.Length(max=100))
     title = ma.String(required=True, validate=validate.Length(max=1024))
     text = ma.String(required=True, validate=validate.Length(max=8192))
