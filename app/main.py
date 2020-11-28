@@ -1,6 +1,7 @@
 import logging
 
 import sentry_sdk
+from flasgger import Swagger
 from flask import Flask
 from flask_admin import Admin
 from flask_marshmallow import Marshmallow
@@ -23,6 +24,7 @@ admin = Admin(app, name='Kyiv data', template_mode='bootstrap3')
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 migrate = Migrate(app, db)
+swagger = Swagger(app)
 
 from . import views
 from . import commands

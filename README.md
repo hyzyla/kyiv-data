@@ -3,7 +3,7 @@
 
 ## Generate requirements/base.txt
 ```
-docker-compose run --rm pip-compile
+docker-compose run --rm pip-compile requirements/base.in -o requirements/base.txt
 ```
 
 ## Generate requirements/tools.txt
