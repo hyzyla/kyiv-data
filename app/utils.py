@@ -116,7 +116,7 @@ def _validate_user_token() -> UserCtx:
             verify=True,
             options={'verify_signature': False}
         )
-    except InvalidSignatureError():
+    except InvalidSignatureError:
         raise InvalidTokenError()
 
     return UserCtx(user_id=payload['sub'], token=token)
