@@ -2,7 +2,7 @@ from typing import Tuple
 
 from marshmallow import post_load, validate, validates, ValidationError
 
-from app.extensions import ma
+from app.extensions import ma, db
 from app.tickets.enums import TicketSource, TicketStatus
 from app.tickets.models import Ticket, District, Subject, City
 
