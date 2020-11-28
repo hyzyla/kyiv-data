@@ -1,22 +1,18 @@
 import logging
-import csv
-import re
 from time import sleep
-
-import sqlalchemy as sa
-
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-
 from typing import Dict, List, Optional
 
+import click
 import requests
+from flask.cli import AppGroup
 
-from app.config import settings
-from app.constants import DISTRICTS
-from app.db import select_last_ticket, get_kyiv
-from app.enums import TicketSource
-from app.main import app, db
-from app.models import Ticket, Street
+from app.extensions import db
+from app.lib.config import settings
+from app.tickets.constants import DISTRICTS
+from app.tickets.db import select_last_ticket, get_kyiv
+from app.tickets.enums import TicketSource
+from app.tickets.models import Ticket
+
 
 PAGE_SIZE = 1000
 TICKETS_URL = f'https://{settings.CC_HOST}/api/tickets/search'
@@ -53,6 +49,8 @@ STREET_CSV_MAP = {
 
 logger = logging.getLogger(__name__)
 
+group = AppGroup('tickets')
+
 
 def _fetch_tickets_page(
     page_num: int = 1,
@@ -83,7 +81,8 @@ def _fetch_last_ticket_page(districts_ids: Optional[List[str]] = None):
     return _fetch_tickets_page(page_num=total_pages, districts_ids=districts_ids)
 
 
-def _fetch_last_processed_page(ticket_id: int, districts_ids: Optional[List[str]] = None):
+def _fetch_last_processed_page(ticket_id: int,
+                               districts_ids: Optional[List[str]] = None):
     page_num = 1
 
     while True:
@@ -138,8 +137,8 @@ def _process_district_tickets_page(page, last_id: int, district_id: str):
         tickets_ids.append(item['id'])
     (
         db.session.query(Ticket)
-        .filter(Ticket.external_id.in_(tickets_ids))
-        .update({'district_id': district_id}, synchronize_session=False)
+            .filter(Ticket.external_id.in_(tickets_ids))
+            .update({'district_id': district_id}, synchronize_session=False)
     )
     db.session.commit()
 
@@ -162,7 +161,7 @@ def _fetch_ticket_progress(ticket_id: str):
     return result
 
 
-@app.cli.command()
+@group.command()
 def get_new_tickets():
     ticket = select_last_ticket()
     last_id: Optional[int] = ticket and int(ticket.external_id)
@@ -209,83 +208,3 @@ def get_districts_tickets():
     for district in DISTRICTS:
         district_id = str(district['id'])
         get_district_tickets(district_id)
-
-
-@app.cli.command()
-def get_ticket_progress():
-    ticket = select_last_ticket()
-    progress = _fetch_ticket_progress(ticket.external_id)
-    from pprint import pprint
-
-    pprint(progress)
-
-
-@app.cli.command()
-def load_streets_data():
-    streets = []
-    with open('data/streets.csv', mode='r') as file:
-        reader = csv.DictReader(file)
-        for line in reader:
-            data = {}
-            for key, name in STREET_CSV_MAP.items():
-                value = line[name]
-                value = '' if value == '-' else value
-                data[key] = value or None
-            streets.append(data)
-
-    statement = pg_insert(Street).values(streets)
-    statement = statement.on_conflict_do_update(
-        constraint='streets_pkey',
-        set_={
-            'name': sa.func.trim(statement.excluded.name),
-            'category': statement.excluded.category,
-            'district': statement.excluded.district,
-            'document': statement.excluded.document,
-            'document_date': statement.excluded.document_date,
-            'document_title': statement.excluded.document_title,
-            'document_number': statement.excluded.document_number,
-            'old_category': statement.excluded.old_category,
-            'old_name': statement.excluded.old_name,
-            'comment': statement.excluded.comment,
-        },
-    )
-    db.session.execute(statement)
-    db.session.commit()
-
-
-def split_address(address: str):
-    address = address.lower()
-    cyrillic_re = r'[а-яА-ЯЇїІіЄєҐґ’\d\w\"|\'|\.]'
-    name_re = fr'({cyrillic_re}({cyrillic_re}|-|\s)+{cyrillic_re})'
-    type_re = fr'(просп.|вул.|Вул.|пл.|пров.|бульв.|шосе|наб.|дорога|туп.|узвіз|проїзд)'
-    old_re = fr'({name_re}\s*(\,\s*{name_re}\s*)*\))'
-    number_re = fr'.*'
-    pattern_re = (
-        fr'^'  # World start
-        fr'('
-        fr'((?P<type_l>{type_re})\s*((?P<name_l>{name_re})\s*(?P<old_l>\{old_re}?))|'
-        fr'(((?P<name_r>{name_re})\s*(?P<old_r>\{old_re}?)\s*(?P<type_r>{type_re}))\s*'
-        fr')'
-        fr'\,\s*'
-        fr'{number_re}'  # building number
-        fr'$'  # Word end
-    )
-
-    r = re.compile(pattern_re, re.IGNORECASE)
-    result = [m.groupdict() for m in r.finditer(address)]
-    if len(result) != 1:
-        raise ValueError(address)
-    item = result[0]
-    b = {
-        'type': item['type_l'] or item['type_r'],
-        'name': item['name_l'] or item['name_r'],
-        'old': item['old_l'] or item['old_r'],
-    }
-    print(b)
-
-
-@app.cli.command()
-def split_address():
-    tickets = db.session.query(Ticket).filter(Ticket.address.isnot(None)).all()
-    for ticket in tickets:
-        split_address(ticket.address)

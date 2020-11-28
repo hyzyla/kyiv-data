@@ -11,4 +11,4 @@ RUN python -m pip install -r /app/requirements/prod.txt
 
 ADD . .
 
-CMD ["gunicorn"  , "-b", "0.0.0.0:7070", "app.main:app"]
+CMD ["gunicorn"  , "-b", "0.0.0.0:7070", "runner:app"]

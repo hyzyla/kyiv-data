@@ -1,18 +1,15 @@
 from sqlalchemy import BigInteger, Text, DateTime, Date
 from sqlalchemy.dialects.postgresql import JSONB
 
-from app.enums import TicketSource
+from app.extensions import db
 from app.lib.db import SoftEnum
-from app.main import db
+from app.tickets.enums import TicketSource
 
 
 class Ticket(db.Model):
     __tablename__ = 'tickets'
 
-    id = db.Column(
-        BigInteger,
-        primary_key=True,
-    )
+    id = db.Column(BigInteger, primary_key=True)
 
     # ID from contact center
     external_id = db.Column(BigInteger, nullable=False, index=True)
@@ -58,21 +55,3 @@ class Subject(db.Model):
     id = db.Column(BigInteger, primary_key=True)
     name = db.Column(Text, nullable=False)
 
-
-class Street(db.Model):
-    __tablename__ = 'streets'
-
-    id = db.Column(BigInteger, primary_key=True)
-    name = db.Column(Text, nullable=False)
-    category = db.Column(Text, nullable=False)
-    district = db.Column(Text, nullable=False)
-
-    document = db.Column(Text)
-    document_date = db.Column(Text)
-    document_title = db.Column(Text)
-    document_number = db.Column(Text)
-
-    old_category = db.Column(Text)
-    old_name = db.Column(Text)
-
-    comment = db.Column(Text)

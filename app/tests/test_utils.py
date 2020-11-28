@@ -2,9 +2,6 @@ from datetime import date
 
 from sqlalchemy.sql.functions import now
 
-from app.enums import TicketSource
-from app.main import db
-from app.models import Ticket, City, Subject, District
 
 
 def prepare_ticket(

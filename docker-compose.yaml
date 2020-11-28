@@ -9,7 +9,7 @@ x-python: &app-python
   image: kyiv-data
   volumes: [ '.:/app' ]
   environment:
-    - FLASK_APP=app.main:app
+    - FLASK_APP=runner:app
   env_file:
     - config/dev/dev.env
 
@@ -20,7 +20,7 @@ x-tools: &app-tools
     context: .
     dockerfile: docker/tools.dockerfile
   environment:
-    - FLASK_APP=app.main:app
+    - FLASK_APP=runner:app
   image: kyiv-data-tools
   volumes: [ '.:/app' ]
 

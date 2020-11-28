@@ -1,36 +1,31 @@
 from http import HTTPStatus
 
-from flask import redirect, jsonify
+from flask import Blueprint
+from flask import redirect
 
-from app import utils, validators
-from app.lib.errors import BaseError
-from app.main import app, db
-from app.models import Ticket, District, Subject, City
-from app.schemas import (
+from app.extensions import db
+from app.lib.utils import api_response
+from app.tickets import validators, utils
+from app.tickets.models import Ticket, District, Subject
+from app.tickets.schemas import ticket_schema
+from app.tickets.schemas import (
     tickets_schema,
     districts_schema,
     subjects_schema,
     titles_schema,
-    ticket_schema,
-    cities_schema,
 )
-from app.utils import get_search_filters, login_required, api_response
+from app.tickets.utils import get_search_filters
+from app.users.utils import login_required
+
+blueprint = Blueprint("tickets", __name__, url_prefix="/")
 
 
-@app.errorhandler(BaseError)
-def handle_base_error(error: BaseError):
-    app.logger.info(f'Base error {error.to_dict()}')
-    response = jsonify(error.to_dict())
-    response.status_code = error.code
-    return response
-
-
-@app.route("/")
+@blueprint.route("/")
 def read_root():
     return redirect('/admin/ticket')
 
 
-@app.route('/api/search')
+@blueprint.route('/api/search')
 def search():
 
     filters = get_search_filters()
@@ -43,7 +38,7 @@ def search():
     return api_response(tickets_schema.dumps(tickets_page))
 
 
-@app.route('/api/districts')
+@blueprint.route('/api/districts')
 def get_districts():
     # Do not optimize without any reason for that
     districts = (
@@ -58,7 +53,7 @@ def get_districts():
     return api_response(districts_schema.dumps(districts))
 
 
-@app.route('/api/subjects')
+@blueprint.route('/api/subjects')
 def get_subjects():
     subjects = (
         db.session.query()
@@ -72,7 +67,7 @@ def get_subjects():
     return api_response(subjects_schema.dumps(subjects))
 
 
-@app.route('/api/titles')
+@blueprint.route('/api/titles')
 def get_titles():
     subjects = (
         db.session.query()
@@ -85,7 +80,7 @@ def get_titles():
     return api_response(titles_schema.dumps(subjects))
 
 
-@app.route('/api/tickets', methods=['POST'])
+@blueprint.route('/api/tickets', methods=['POST'])
 @login_required
 def create_ticket(ctx):
     data = validators.create_ticket()
@@ -93,15 +88,15 @@ def create_ticket(ctx):
     return api_response(ticket_schema.dumps(ticket), status=HTTPStatus.OK)
 
 
-@app.route('/api/tickets/<int:ticket_id>', methods=['GET'])
+@blueprint.route('/api/tickets/<int:ticket_id>', methods=['GET'])
 def get_ticket(ticket_id):
     ticket = db.session.query(Ticket).filter(Ticket.id == ticket_id).first_or_404()
     return api_response(ticket_schema.dumps(ticket))
 
 
-@app.route('/api/tickets/<int:ticket_id>', methods=['DELETE'])
+@blueprint.route('/api/tickets/<int:ticket_id>', methods=['DELETE'])
 @login_required
-def delete_note(ctx, ticket_id):
+def delete_ticket(ctx, ticket_id):
     ticket = db.session.query(Ticket).filter(Ticket.id == ticket_id).first_or_404()
     db.session.delete(ticket)
     db.session.commit()

@@ -5,7 +5,7 @@ from marshmallow import ValidationError, Schema
 
 from app.lib.errors import SchemaValidatorError
 from app.lib.types import DataDict
-from app.main import app
+
 
 T = TypeVar('T', bound=Schema)
 

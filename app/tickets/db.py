@@ -1,8 +1,8 @@
 from typing import Optional
 
-from app.enums import TicketSource
-from app.main import db
-from app.models import Ticket, City
+from app.extensions import db
+from app.tickets.enums import TicketSource
+from app.tickets.models import Ticket, City
 
 
 def select_last_ticket(

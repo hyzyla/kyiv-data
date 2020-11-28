@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-from app.constants import SUBJECTS, DISTRICTS
-from app.models import District, Subject
+from app.tickets.constants import SUBJECTS, DISTRICTS
+from app.tickets.models import District, Subject
 
 revision = '95ea288c728a'
 down_revision = 'bd0d7ec077b4'

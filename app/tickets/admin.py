@@ -1,7 +1,7 @@
 from flask_admin.contrib.sqla import ModelView
 
-from app.main import admin, db
-from app.models import Ticket, District, Subject, City
+from app.extensions import admin, db
+from app.tickets.models import Ticket, District, Subject
 
 
 class ReadOnlyView(ModelView):
@@ -29,7 +29,6 @@ class CityView(ReadOnlyView):
     column_list = ('id', 'name')
 
 
-admin.add_view(TicketView(Ticket, db.session))
-admin.add_view(DistrictView(District, db.session))
-admin.add_view(SubjectView(Subject, db.session))
-admin.add_view(CityView(City, db.session))
+ticket_view = TicketView(Ticket, db.session)
+district_view = DistrictView(District, db.session)
+subject_view = SubjectView(Subject, db.session)
