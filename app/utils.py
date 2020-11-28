@@ -94,6 +94,7 @@ def create_ticket(data: DataDict, ctx: UserCtx) -> Ticket:
 
 
 def _validate_service_token():
+    print(request.headers)
     token = request.headers.get('TOKEN')
     if token != settings.AUTH_TOKEN:
         raise InvalidTokenError(
