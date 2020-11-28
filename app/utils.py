@@ -94,16 +94,32 @@ def create_ticket(data: DataDict, ctx: UserCtx) -> Ticket:
 
 
 def _validate_service_token():
-    print(request.headers)
-    token = request.headers.get('TOKEN')
+    token = request.headers.get('Authorization')
     if token != settings.AUTH_TOKEN:
         raise InvalidTokenError(
             message=(
                 'Не валідний сервісний токен. Передайте токен згенерований '
-                'адміністором системи у заголовку запиту TOKEN'
+                'адміністором системи у заголовку запиту Authorization'
             ),
             extra={'is_token_empty': bool(bool)}
         )
+
+
+def _validate_user_token() -> UserCtx:
+    auth = request.headers.get('Custom-Token')
+    match = TOKEN_RE.match(auth)
+    token: str = match.group('token')
+    try:
+        payload = jwt.decode(
+            jwt=token,
+            algorithms='HS256',
+            verify=True,
+            options={'verify_signature': False}
+        )
+    except InvalidSignatureError():
+        raise InvalidTokenError()
+
+    return UserCtx(user_id=payload['sub'], token=token)
 
 
 def login_required(func):
@@ -111,21 +127,8 @@ def login_required(func):
     def wrapper(*args, **kwargs):
 
         _validate_service_token()
+        ctx = _validate_user_token()
 
-        auth = request.headers.get('Authorization')
-        match = TOKEN_RE.match(auth)
-        token: str = match.group('token')
-        try:
-            payload = jwt.decode(
-                jwt=token,
-                algorithms='HS256',
-                verify=True,
-                options={'verify_signature': False}
-            )
-        except InvalidSignatureError():
-            raise InvalidTokenError()
-
-        ctx = UserCtx(user_id=payload['sub'], token=token)
         return func(ctx, *args, **kwargs)
 
     return wrapper
