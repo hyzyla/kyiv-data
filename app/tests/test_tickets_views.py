@@ -20,8 +20,8 @@ TOKEN = (
     'kEQg8CXc'
 )
 AUTH_HEADERS = {
-    'Authorization': f'Bearer {TOKEN}',
-    'Token': 'super-secret',
+    'CustomToken': f'Bearer {TOKEN}',
+    'Authorization': 'super-secret',
 }
 
 

@@ -6,7 +6,7 @@ import re
 
 import jwt
 from flask import request
-from jwt import InvalidSignatureError
+from jwt import PyJWTError
 
 from app.config import settings
 from app.lib.errors import InvalidTokenError
@@ -113,11 +113,11 @@ def _validate_user_token() -> UserCtx:
         payload = jwt.decode(
             jwt=token,
             algorithms='HS256',
-            verify=True,
+            verify=False,
             options={'verify_signature': False}
         )
-    except InvalidSignatureError:
-        raise InvalidTokenError()
+    except PyJWTError as error:
+        raise InvalidTokenError(extra={'reason': str(error)})
 
     return UserCtx(user_id=payload['sub'], token=token)
 
