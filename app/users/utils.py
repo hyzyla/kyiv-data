@@ -24,6 +24,9 @@ def _validate_service_token():
 
 def _validate_user_token() -> UserCtx:
     auth = request.headers.get('Custom-Token')
+    if not auth:
+        raise InvalidTokenError(message='Токен користувача не знайдено')
+
     match = TOKEN_RE.match(auth)
     token: str = match.group('token')
     try:

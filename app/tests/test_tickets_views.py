@@ -20,7 +20,7 @@ TOKEN = (
     'kEQg8CXc'
 )
 AUTH_HEADERS = {
-    'CustomToken': f'Bearer {TOKEN}',
+    'Custom-Token': f'Bearer {TOKEN}',
     'Authorization': 'super-secret',
 }
 
@@ -39,7 +39,7 @@ def test_base_search(client):
     ticket2_id = ticket2.id
 
     response = client.get('/api/search')
-    assert response.status_code == HTTPStatus.OK, response.extra
+    assert response.status_code == HTTPStatus.OK, response.json
 
     from pprint import pprint
     pprint(response.json)
@@ -93,29 +93,29 @@ def test_base_search(client):
 
 def test_get_ticket(client: FlaskClient):
     response = client.get('/api/tickets/1')
-    assert response.status_code == HTTPStatus.NOT_FOUND, response.extra
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.json
 
     city = prepare_city()
     ticket = prepare_ticket(city_id=city.id)
     response = client.get(f'/api/tickets/{ticket.id}')
-    assert response.status_code == HTTPStatus.OK, response.extra
+    assert response.status_code == HTTPStatus.OK, response.edatdatxtra
 
 
 def test_delete_ticket(client: FlaskClient):
     response = client.delete('/api/tickets/1', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.NOT_FOUND, response.extra
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.json
 
     city = prepare_city()
     ticket1 = prepare_ticket(city_id=city.id)
     ticket2 = prepare_ticket(city_id=city.id)
     response = client.delete(f'/api/tickets/{ticket2.id}')
-    assert response.status_code == HTTPStatus.FORBIDDEN, response.extra
+    assert response.status_code == HTTPStatus.FORBIDDEN, response.json
 
     response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.OK, response.extra
+    assert response.status_code == HTTPStatus.OK, response.json
 
     response = client.delete(f'/api/tickets/{ticket2.id}', headers=AUTH_HEADERS)
-    assert response.status_code == HTTPStatus.NOT_FOUND, response.extra
+    assert response.status_code == HTTPStatus.NOT_FOUND, response.json
 
 
 @pytest.mark.parametrize(
