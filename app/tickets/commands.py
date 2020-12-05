@@ -89,7 +89,7 @@ def _fetch_last_processed_page(ticket_id: int,
         page = _fetch_tickets_page(page_num, districts_ids=districts_ids)
         items = page['data']
         if not items:
-            raise ValueError()
+            return page
 
         last, first = items[0], items[-1]
         logger.info(f'Fetching last page: {first["id"]} < {ticket_id} < {last["id"]}')
