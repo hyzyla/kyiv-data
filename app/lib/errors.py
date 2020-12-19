@@ -8,11 +8,7 @@ class BaseError(Exception):
     message: str = 'Помилка'
     code: int = HTTPStatus.BAD_REQUEST
 
-    def __init__(
-        self,
-        message: Optional[str] = None,
-        extra: Optional[DataDict] = None
-    ) -> None:
+    def __init__(self, message: Optional[str] = None, extra: Optional[DataDict] = None) -> None:
         self.extra = extra
         self.message = message or self.message
 

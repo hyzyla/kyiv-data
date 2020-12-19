@@ -10,9 +10,19 @@ class TicketSource(Enum):
 
 @unique
 class TicketStatus(Enum):
+    new = 'На модерації'
     active = 'В роботі'
     finished = 'Звернення виконано'
 
     @classmethod
     def get_values(cls) -> Tuple[str, ...]:
-        return cls.active.value, cls.finished.value
+        return tuple(cls.__members__.values())
+
+
+@unique
+class TicketPriority(Enum):
+    discomfort = 'discomfort'
+    waiting = 'waiting'
+    losing_money = 'losing_money'
+    damage = 'damage'
+    death = 'death'

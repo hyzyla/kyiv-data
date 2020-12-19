@@ -1,9 +1,11 @@
-from sqlalchemy import BigInteger, Text, DateTime, Date
-from sqlalchemy.dialects.postgresql import JSONB
+from datetime import datetime
+
+from sqlalchemy import BigInteger, Text, DateTime, Date, Float
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.extensions import db
-from app.lib.db import SoftEnum
-from app.tickets.enums import TicketSource
+from app.lib.utils import gen_uuid
+from app.tickets.enums import TicketSource, TicketPriority
 
 
 class Ticket(db.Model):
@@ -11,27 +13,55 @@ class Ticket(db.Model):
 
     id = db.Column(BigInteger, primary_key=True)
 
-    # ID from contact center
-    external_id = db.Column(BigInteger, nullable=False, index=True)
-    number = db.Column(Text, nullable=False)
+    # ID and number from contact center
+    external_id = db.Column(BigInteger, index=True)
+    number = db.Column(Text)
+
     title = db.Column(Text, nullable=False, index=True)
     text = db.Column(Text, nullable=False)
     status = db.Column(Text, nullable=False)
     address = db.Column(Text)
-    work_taken_by = db.Column(Text, nullable=False)
-    approx_done_date = db.Column(Date, nullable=False)
-    created_at = db.Column(DateTime, nullable=False)
+    priority = db.Column(db.Enum(TicketPriority, native_enum=False, length=100))
+    link = db.Column(Text)
+    work_taken_by = db.Column(Text)
+    approx_done_date = db.Column(Date)
+    created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
     subject_id = db.Column(BigInteger, nullable=False, index=True)
     user_id = db.Column(Text, nullable=False)
 
     district_id = db.Column(BigInteger, index=True)
-    city_id = db.Column(db.ForeignKey('cities.id'), nullable=False)
-    city = db.relationship('City')
+    city_id = db.Column(BigInteger, nullable=False)
 
-    source = db.Column(SoftEnum(TicketSource), nullable=False)
+    source = db.Column(db.Enum(TicketSource, native_enum=False, length=100))
+
+    location = db.relationship('TicketLocation', uselist=False)
+    tags = db.relationship('TicketTag', uselist=True)
+    photos = db.relationship('TicketPhoto', uselist=True)
 
     # All data saved in JSON
     meta = db.Column(JSONB, nullable=False)
+
+
+class TicketLocation(db.Model):
+    id = db.Column(UUID, primary_key=True, default=gen_uuid)
+    lat = db.Column(Float, nullable=False)
+    lng = db.Column(Float, nullable=False)
+    ticket_id = db.Column(db.ForeignKey('tickets.id'), unique=True)
+
+
+class TicketTag(db.Model):
+    id = db.Column(UUID, primary_key=True, default=gen_uuid)
+    name = db.Column(db.Text, nullable=False)
+    created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
+    ticket_id = db.Column(db.ForeignKey('tickets.id'))
+
+
+class TicketPhoto(db.Model):
+    __tablename__ = 'tickets_photos'
+
+    id = db.Column(UUID, primary_key=True, default=gen_uuid)
+    ticket_id = db.Column(db.ForeignKey('tickets.id'), nullable=True)
+    created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
 
 
 class District(db.Model):
@@ -54,4 +84,3 @@ class Subject(db.Model):
 
     id = db.Column(BigInteger, primary_key=True)
     name = db.Column(Text, nullable=False)
-

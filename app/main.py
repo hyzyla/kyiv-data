@@ -79,9 +79,4 @@ def configure_logger(app):
 
 
 def configure_sentry():
-    sentry_sdk.init(
-        dsn=settings.SENTRY_DSN,
-        integrations=[FlaskIntegration()],
-        traces_sample_rate=1.0
-    )
-
+    sentry_sdk.init(dsn=settings.SENTRY_DSN, integrations=[FlaskIntegration()], traces_sample_rate=1.0)

@@ -1,10 +1,11 @@
 from datetime import date
+from typing import Optional
 
 from sqlalchemy.sql.functions import now
 
 from app.extensions import db
 from app.tickets.enums import TicketSource
-from app.tickets.models import Ticket, Subject, City, District
+from app.tickets.models import Ticket, Subject, City, District, TicketPhoto
 
 
 def prepare_ticket(
@@ -46,18 +47,25 @@ def prepare_ticket(
     return ticket
 
 
-def prepare_city(name: str = 'Київ') -> City:
-    city = City(name=name)
+def prepare_city(id_: int = 1, name: str = 'Київ') -> City:
+    city = City(id=id_, name=name)
     db.session.add(city)
     db.session.commit()
     return city
 
 
-def prepare_subject(name: str = 'Test subject') -> Subject:
-    subject = Subject(name=name)
+def prepare_subject(id_: int = 1, name: str = 'Test subject') -> Subject:
+    subject = Subject(id=id_, name=name)
     db.session.add(subject)
     db.session.commit()
     return subject
+
+
+def prepare_photo(id_: Optional[str] = None) -> TicketPhoto:
+    photo = TicketPhoto(id=id_)
+    db.session.add(photo)
+    db.session.commit()
+    return photo
 
 
 def prepare_district(name: str = 'Test district') -> District:

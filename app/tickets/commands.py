@@ -81,8 +81,7 @@ def _fetch_last_ticket_page(districts_ids: Optional[List[str]] = None):
     return _fetch_tickets_page(page_num=total_pages, districts_ids=districts_ids)
 
 
-def _fetch_last_processed_page(ticket_id: int,
-                               districts_ids: Optional[List[str]] = None):
+def _fetch_last_processed_page(ticket_id: int, districts_ids: Optional[List[str]] = None):
     page_num = 1
 
     while True:
@@ -137,8 +136,8 @@ def _process_district_tickets_page(page, last_id: int, district_id: str):
         tickets_ids.append(item['id'])
     (
         db.session.query(Ticket)
-            .filter(Ticket.external_id.in_(tickets_ids))
-            .update({'district_id': district_id}, synchronize_session=False)
+        .filter(Ticket.external_id.in_(tickets_ids))
+        .update({'district_id': district_id}, synchronize_session=False)
     )
     db.session.commit()
 

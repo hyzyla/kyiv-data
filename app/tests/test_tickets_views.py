@@ -8,8 +8,12 @@ from app.tests.test_utils import (
     prepare_ticket,
     prepare_city,
     prepare_subject,
-    prepare_district,
+    prepare_district, prepare_photo,
 )
+from app.tickets.enums import TicketPriority
+
+TEST_UUID_1 = '358eaec0-cb1d-4340-91da-3b0612cab6b5'
+TEST_UUID_2 = '7617f8e0-a0ed-455e-a2e7-09fd7fc38be4'
 
 TOKEN = (
     'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9vdC'
@@ -22,6 +26,41 @@ TOKEN = (
 AUTH_HEADERS = {
     'Custom-Token': f'Bearer {TOKEN}',
     'Authorization': 'super-secret',
+}
+
+TEST_TEXT = (
+    'На прорізній, біля Віртуаторія, після піщаної бурі перестав працювати Телепорт '
+    'ДВЗ-12. Починіть, пліз! Дуже хочу потрапити до батьків на День інтернету.'
+)
+
+TEST_CREATE_TICKET = {
+    'title': 'Не працює телепорт',
+    'city_id': 100,
+    'address': 'вул. Прорізна, буд. 13',
+    'subject_id': 200,
+    'text': TEST_TEXT,
+}
+TEST_CREATE_TICKET_EXPECTED = {
+    'address': 'вул. Прорізна, буд. 13',
+    'approx_done_date': None,
+    'city_id': 100,
+    'created_at': mock.ANY,
+    'district_id': None,
+    'external_id': None,
+    'id': mock.ANY,
+    'number': None,
+    'source': 'api',
+    'link': None,
+    'location': None,
+    'tags': [],
+    'photos': [],
+    'priority': None,
+    'status': 'На модерації',
+    'subject_id': 200,
+    'text': TEST_TEXT,
+    'title': 'Не працює телепорт',
+    'user_id': '1',
+    'work_taken_by': None,
 }
 
 
@@ -41,8 +80,6 @@ def test_base_search(client):
     response = client.get('/api/search')
     assert response.status_code == HTTPStatus.OK, response.json
 
-    from pprint import pprint
-    pprint(response.json)
     case = TestCase()
     case.maxDiff = None
     case.assertEqual(
@@ -119,57 +156,108 @@ def test_delete_ticket(client: FlaskClient):
 
 
 @pytest.mark.parametrize(
-    'headers, status',
+    'headers, status, data, expected',
     [
-        (AUTH_HEADERS, HTTPStatus.OK),
-        ({'Authorization': 'wrong'}, HTTPStatus.FORBIDDEN),
-        (None, HTTPStatus.FORBIDDEN),
+        ({'Authorization': 'wrong'}, HTTPStatus.FORBIDDEN, {}, None),
+        (None, HTTPStatus.FORBIDDEN, {}, None),
+        # Simple create
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            TEST_CREATE_TICKET,
+            TEST_CREATE_TICKET_EXPECTED,
+        ),
+        # With location
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            {
+                **TEST_CREATE_TICKET,
+                'location': {
+                    'lat': 19.1,
+                    'lng': 21.02,
+                },
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'location': {
+                    'lat': 19.1,
+                    'lng': 21.02,
+                },
+            },
+        ),
+        # With priority, link
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            {
+                **TEST_CREATE_TICKET,
+                'priority': TicketPriority.damage.value,
+                'link': 'https://youtube.com',
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'priority': TicketPriority.damage.value,
+                'link': 'https://youtube.com',
+            },
+        ),
+        # With tags
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            {
+                **TEST_CREATE_TICKET,
+                'tags': [
+                    {'name': 'test tag 1'},
+                    {'name': 'Test TAG   1  '},
+                    {'name': 'Tag 2'},
+                ],
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'tags': [
+                    {'name': 'Test Tag 1'},
+                    {'name': 'Tag 2'},
+                ],
+            },
+        ),
+        # With photos
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            {
+                **TEST_CREATE_TICKET,
+                'photos': [
+                    {'id': TEST_UUID_1},  # photo is uploaded
+                    {'id': TEST_UUID_2},  # photo is not uploaded
+                ],
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'photos': [
+                    {'id': TEST_UUID_1},  # only uploaded photo
+                ],
+            },
+        ),
     ],
 )
-def test_create_ticket(client: FlaskClient, headers, status):
-    city = prepare_city()
-    response = client.post(
-        '/api/tickets',
-        json={
-            'title': 'Не працює телепорт',
-            'city_id': city.id,
-            'external_id': 1123,
-            'approx_done_date': '2077-12-06',
-            'address': 'вул. Прорізна, буд. 13',
-            'number': '23',
-            'status': 'В роботі',
-            'work_taken_by': '1',
-            'subject_id': 1,
-            'text': (
-                'На прорізній, після піщаної бурі перестав працювати Телепорт ДВЗ-12.'
-                'Починіть, пліз! Дуже хочу потрапити до батьків на День Інтернету'
-            ),
-        },
-        headers=headers,
-    )
+def test_create_ticket(client: FlaskClient, headers, status, data, expected):
+    prepare_city(id_=100)
+    prepare_subject(id_=200)
+    prepare_photo(id_=TEST_UUID_1)
+
+    response = client.post('/api/tickets', json=data, headers=headers)
     assert response.status_code == status, response.json
-    if response.status_code != HTTPStatus.CREATED:
+    if response.status_code != HTTPStatus.OK:
         return
 
-    assert response.json == {
-        'address': 'вул. Прорізна, буд. 13',
-        'approx_done_date': '2077-12-06',
-        'city_id': city.id,
-        'created_at': mock.ANY,
-        'district_id': None,
-        'external_id': 1123,
-        'id': mock.ANY,
-        'number': '23',
-        'source': 'api',
-        'status': 'В роботі',
-        'subject_id': 1,
-        'text': 'На прорізній, після піщаної бурі перестав працювати Телепорт '
-        'ДВЗ-12.Починіть, пліз! Дуже хочу потрапити до батьків на День '
-        'Інтернету',
-        'title': 'Не працює телепорт',
-        'user_id': '100',
-        'work_taken_by': '1',
-    }
+    data = response.json
+    data['tags'] = list(sorted(data['tags'], key=lambda d: d['name']))
+    data['photos'] = list(sorted(data['photos'], key=lambda d: d['id']))
+
+    expected['tags'] = list(sorted(expected['tags'], key=lambda d: d['name']))
+    expected['photos'] = list(sorted(expected['photos'], key=lambda d: d['id']))
+    assert data == expected
 
 
 def test_get_titles(client):

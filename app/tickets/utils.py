@@ -6,7 +6,7 @@ from flask import request
 
 from app.extensions import db
 from app.lib.types import DataDict
-from app.tickets.models import Ticket
+from app.tickets.models import Ticket, TicketLocation, TicketTag, TicketPhoto
 from app.users.types import UserCtx
 
 TOKEN_RE = re.compile(r'^(Bearer)?\s*(?P<token>.*)$', re.IGNORECASE)
@@ -80,9 +80,35 @@ def get_search_filters():
     return filters
 
 
+def prepare_tag_name(name: str) -> str:
+    parts = name.split()
+    return ' '.join(part for part in parts).casefold().title()
+
+
+def create_tickets_tags(items: List[DataDict]) -> List[TicketTag]:
+    names = {prepare_tag_name(item['name']) for item in items}
+    return [TicketTag(name=name) for name in names]
+
+
+def get_tickets_photos(items: List[DataDict]) -> List[TicketPhoto]:
+    photos_ids = {item['id'] for item in items}
+    return db.session.query(TicketPhoto).filter(TicketPhoto.id.in_(photos_ids)).all()
+
+
 def create_ticket(data: DataDict, ctx: UserCtx) -> Ticket:
-    ticket = Ticket(**data, user_id=ctx.user_id, created_at=datetime.utcnow())
+    location_data = data.pop('location', None)
+    location = location_data and TicketLocation(**location_data)
+
+    tags = create_tickets_tags(data.pop('tags', None) or [])
+    photos = get_tickets_photos(data.pop('photos', None) or [])
+
+    ticket = Ticket(
+        **data,
+        location=location,
+        tags=tags,
+        photos=photos,
+        user_id=ctx.user_id,
+    )
     db.session.add(ticket)
     db.session.commit()
     return ticket
-

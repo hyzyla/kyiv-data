@@ -10,7 +10,9 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-from app.lib.db import SoftEnum
+from sqlalchemy import Enum
+
+from app.tickets.enums import TicketSource
 
 revision = 'f4a38b9d5a8e'
 down_revision = '60cb870a41aa'
@@ -26,7 +28,14 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
     )
     op.add_column('tickets', sa.Column('city_id', sa.BigInteger(), nullable=True))
-    op.add_column('tickets', sa.Column('source', SoftEnum(), nullable=True))
+    op.add_column(
+        'tickets',
+        sa.Column(
+            'source',
+            Enum(TicketSource, native_enum=False, length=100),
+            nullable=True
+        ),
+    )
     op.create_foreign_key(None, 'tickets', 'cities', ['city_id'], ['id'])
 
     op.execute(

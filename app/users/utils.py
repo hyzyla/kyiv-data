@@ -18,7 +18,7 @@ def _validate_service_token():
                 'Не валідний сервісний токен. Передайте токен згенерований '
                 'адміністором системи у заголовку запиту Authorization'
             ),
-            extra={'is_token_empty': bool(bool)}
+            extra={'is_token_empty': bool(bool)},
         )
 
 
@@ -30,12 +30,7 @@ def _validate_user_token() -> UserCtx:
     match = TOKEN_RE.match(auth)
     token: str = match.group('token')
     try:
-        payload = jwt.decode(
-            jwt=token,
-            algorithms='HS256',
-            verify=False,
-            options={'verify_signature': False}
-        )
+        payload = jwt.decode(jwt=token, algorithms='HS256', verify=False, options={'verify_signature': False})
     except PyJWTError as error:
         raise InvalidTokenError(extra={'reason': str(error)})
 

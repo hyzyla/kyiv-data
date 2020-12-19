@@ -19,5 +19,6 @@ def client(app):
         yield client
 
     tables = ', '.join(db.metadata.tables)
+    db.session.rollback()
     db.session.execute(f'TRUNCATE {tables} CASCADE;')
     db.session.commit()

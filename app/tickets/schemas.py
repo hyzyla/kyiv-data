@@ -1,12 +1,12 @@
-from typing import Tuple
-
 from marshmallow import post_load, validate, validates, ValidationError
+from marshmallow_enum import EnumField
 
 from app.extensions import ma, db
-from app.tickets.enums import TicketSource, TicketStatus
-from app.tickets.models import Ticket, District, Subject, City
-
-CREATE_TICKET_STATUSES: Tuple[str, ...] = TicketStatus.get_values()
+from app.tickets.enums import TicketSource, TicketPriority, TicketStatus
+from app.tickets.models import (
+    Ticket, District, Subject, City, TicketLocation,
+    TicketTag, TicketPhoto
+)
 
 
 class PageSchema(ma.Schema):
@@ -14,6 +14,28 @@ class PageSchema(ma.Schema):
     page = ma.Integer(dump_only=True)
     per_page = ma.Integer(dump_to='per_page', dump_only=True)
     total = ma.Integer(dump_to='total_items', dump_only=True)
+
+
+class TicketLocationSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = TicketLocation
+
+    lat = ma.auto_field()
+    lng = ma.auto_field()
+
+
+class TicketTagSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = TicketTag
+
+    name = ma.auto_field()
+
+
+class TicketPhotoSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = TicketPhoto
+
+    id = ma.String()  # TODO: to soft UUID
 
 
 class TicketSchema(ma.SQLAlchemySchema):
@@ -28,29 +50,34 @@ class TicketSchema(ma.SQLAlchemySchema):
     text = ma.auto_field()
     status = ma.auto_field()
     address = ma.auto_field()
+    link = ma.auto_field()
+    priority = EnumField(TicketPriority, by_value=True)
+    location = ma.Nested(TicketLocationSchema)
+    tags = ma.List(ma.Nested(TicketTagSchema))
+    photos = ma.List(ma.Nested(TicketPhotoSchema))
     work_taken_by = ma.auto_field()
     approx_done_date = ma.auto_field()
     created_at = ma.auto_field()
     subject_id = ma.auto_field()
     district_id = ma.auto_field()
     city_id = ma.auto_field()
-    source = ma.auto_field()
+    source = EnumField(TicketStatus, by_value=True)
 
     @post_load
     def _(self, data, **kwargs):
-        return {**data, 'source': TicketSource(data['source']), 'meta': {}}
+        return {**data, 'meta': {}}
 
 
 class CreateTicketSchema(ma.Schema):
-    external_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
-    number = ma.String(required=True, validate=validate.Length(max=100))
     title = ma.String(required=True, validate=validate.Length(max=1024))
-    text = ma.String(required=True, validate=validate.Length(max=8192))
-    status = ma.String(required=True, validate=validate.OneOf(CREATE_TICKET_STATUSES))
-    address = ma.String(required=True, validate=validate.Length(max=1024))
-    work_taken_by = ma.String(required=True, validate=validate.Length(max=1024))
-    approx_done_date = ma.Date(required=True)
     subject_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
+    text = ma.String(required=True, validate=validate.Length(max=8192))
+    tags = ma.List(ma.Nested(TicketTagSchema), required=False)
+    address = ma.String(required=True, validate=validate.Length(max=1024))
+    location = ma.Nested(TicketLocationSchema, required=False)
+    priority = EnumField(TicketPriority, by_value=True, required=False)
+    link = ma.URL(required=False)
+    photos = ma.List(ma.Nested(TicketPhotoSchema), required=False)
     district_id = ma.Integer(required=False, validate=validate.Range(min=0), strict=True)
     city_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
 
@@ -60,24 +87,14 @@ class CreateTicketSchema(ma.Schema):
         if subject is None:
             return ValidationError('Теми не знайдено')
 
-    @validates('district_id')
-    def validate_district(self, district_id: int, **kwargs):
-        if district_id is None:
-            return
-
-        district = db.session.query(District).get(district_id)
-        if district is None:
-            return ValidationError('Район не знайдено')
-
-    @validates('city_id')
-    def validate_district(self, city_id: int, **kwargs):
-        city = db.session.query(City).get(city_id)
-        if city is None:
-            return ValidationError('Місто не знайдено')
-
     @post_load
     def _(self, data, **kwargs):
-        return {**data, 'source': TicketSource.api, 'meta': {}}
+        return {
+            **data,
+            'source': TicketSource.api,
+            'meta': {},
+            'status': TicketStatus.new.value,
+        }
 
 
 class TicketPageSchema(PageSchema):
