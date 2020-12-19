@@ -6,7 +6,7 @@ import click
 import requests
 from flask.cli import AppGroup
 
-from app.extensions import db
+from app.extensions import db, storage
 from app.lib.config import settings
 from app.tickets.constants import DISTRICTS
 from app.tickets.db import select_last_ticket, get_kyiv
@@ -207,3 +207,8 @@ def get_districts_tickets():
     for district in DISTRICTS:
         district_id = str(district['id'])
         get_district_tickets(district_id)
+
+
+@group.command()
+def create_buckets():
+    storage.connection.make_bucket('photos')

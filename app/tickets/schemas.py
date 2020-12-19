@@ -133,6 +133,7 @@ class TitlesSchema(ma.Schema):
 
 
 ticket_schema = TicketSchema()
+ticket_photo_schema = TicketPhotoSchema()
 create_ticket_schema = CreateTicketSchema()
 tickets_schema = TicketPageSchema()
 districts_schema = DistrictSchema(many=True)

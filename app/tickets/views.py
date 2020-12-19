@@ -1,13 +1,14 @@
+import io
 from http import HTTPStatus
 
-from flask import Blueprint
+from flask import Blueprint, request, current_app
 from flask import redirect
 
-from app.extensions import db
-from app.lib.utils import api_response
+from app.extensions import db, storage
+from app.lib.utils import api_response, gen_uuid
 from app.tickets import validators, utils
-from app.tickets.models import Ticket, District, Subject
-from app.tickets.schemas import ticket_schema
+from app.tickets.models import Ticket, District, Subject, TicketPhoto
+from app.tickets.schemas import ticket_schema, ticket_photo_schema
 from app.tickets.schemas import (
     tickets_schema,
     districts_schema,
@@ -101,3 +102,37 @@ def delete_ticket(ctx, ticket_id):
     db.session.delete(ticket)
     db.session.commit()
     return '', HTTPStatus.OK
+
+
+@blueprint.route('/api/tickets/photos/<photo_id>', methods=['GET'])
+def get_photo(photo_id):
+    photo = db.session.query(TicketPhoto).filter(TicketPhoto.id == photo_id).first_or_404()
+    data = storage.connection.get_object(
+        bucket_name='photos',
+        object_name=photo.id,
+    )
+    return current_app.response_class(
+        response=data,
+        status=HTTPStatus.OK,
+        mimetype=photo.content_type,
+    )
+
+
+@blueprint.route('/api/tickets/photos', methods=['POST'])
+@login_required
+def upload_photo(ctx):
+    file = request.get_data()
+
+    # TODO: add validation for content type
+    content_type = request.headers.get('Content-Type')
+    photo = TicketPhoto(id=gen_uuid(), content_type=content_type)
+    db.session.add(photo)
+    storage.connection.put_object(
+        bucket_name='photos',
+        object_name=photo.id,
+        data=io.BytesIO(file),
+        length=len(file),
+        content_type=content_type
+    )
+    db.session.commit()
+    return api_response(ticket_photo_schema.dumps(photo))

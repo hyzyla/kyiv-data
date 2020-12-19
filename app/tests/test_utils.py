@@ -61,8 +61,8 @@ def prepare_subject(id_: int = 1, name: str = 'Test subject') -> Subject:
     return subject
 
 
-def prepare_photo(id_: Optional[str] = None) -> TicketPhoto:
-    photo = TicketPhoto(id=id_)
+def prepare_photo(id_: Optional[str] = None, content_type: str = 'image/jpeg') -> TicketPhoto:
+    photo = TicketPhoto(id=id_, content_type=content_type)
     db.session.add(photo)
     db.session.commit()
     return photo

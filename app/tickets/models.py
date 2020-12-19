@@ -60,6 +60,7 @@ class TicketPhoto(db.Model):
     __tablename__ = 'tickets_photos'
 
     id = db.Column(UUID, primary_key=True, default=gen_uuid)
+    content_type = db.Column(Text, nullable=False)
     ticket_id = db.Column(db.ForeignKey('tickets.id'), nullable=True)
     created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
 

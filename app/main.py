@@ -5,7 +5,7 @@ from flask import Flask, jsonify
 from sentry_sdk.integrations.flask import FlaskIntegration
 from app import tickets, users
 
-from app.extensions import admin, db, ma, migrate, swagger
+from app.extensions import admin, db, ma, migrate, swagger, storage
 from app.lib.config import settings
 from app.lib.errors import BaseError
 
@@ -13,6 +13,10 @@ from app.lib.errors import BaseError
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = settings.DATABASE_URL
+    app.config['MINIO_ENDPOINT'] = settings.STORAGE_ENDPOINT
+    app.config['MINIO_ACCESS_KEY'] = settings.STORAGE_ACCESS_KEY
+    app.config['MINIO_SECRET_KEY'] = settings.STORAGE_SECRET_KEY
+    app.config['MINIO_SECURE'] = settings.STORAGE_SECURE
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
 
@@ -34,6 +38,7 @@ def register_extensions(app):
     ma.init_app(app)
     migrate.init_app(app, db)
     swagger.init_app(app)
+    storage.init_app(app)
     return None
 
 

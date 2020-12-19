@@ -31,7 +31,7 @@ services:
     entrypoint: flask
     command: run --host=0.0.0.0
     ports: ['5000:5000']
-    depends_on: ['db']
+    depends_on: ['db', 'minio']
 
   db:
     image: postgres:13
@@ -40,6 +40,16 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
       POSTGRES_DB: kyiv-data-database
+
+  minio:
+    image: minio/minio:latest
+    ports: ['9000:9000']
+    environment:
+      MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
+      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+    volumes:
+      - ./.minio:/data
+    command: server /data
 
   db-test:
     image: postgres:13

@@ -9,16 +9,18 @@ appdirs==1.4.4            # via black
 attrs==20.3.0             # via jsonschema, pytest
 black==20.8b1             # via -r requirements/tools.in
 blinker==1.4              # via sentry-sdk
-certifi==2020.6.20        # via requests, sentry-sdk
+certifi==2020.6.20        # via minio, requests, sentry-sdk
 chardet==3.0.4            # via requests
 click==7.1.2              # via black, flask, pip-tools
+configparser==5.0.1       # via minio
 flake8==3.8.4             # via -r requirements/tools.in
 flasgger==0.9.5           # via -r requirements/base.in
 flask-admin==1.5.7        # via -r requirements/base.in
 flask-marshmallow==0.14.0  # via -r requirements/base.in
 flask-migrate==2.5.3      # via -r requirements/base.in
+flask-minio==0.1.2        # via -r requirements/base.in
 flask-sqlalchemy==2.4.4   # via -r requirements/base.in, flask-migrate
-flask==1.1.2              # via -r requirements/base.in, flasgger, flask-admin, flask-marshmallow, flask-migrate, flask-sqlalchemy, sentry-sdk
+flask==1.1.2              # via -r requirements/base.in, flasgger, flask-admin, flask-marshmallow, flask-migrate, flask-minio, flask-sqlalchemy, sentry-sdk
 idna==2.10                # via requests
 iniconfig==1.1.1          # via pytest
 itsdangerous==1.1.0       # via flask
@@ -30,6 +32,7 @@ marshmallow-enum==1.5.1   # via -r requirements/base.in
 marshmallow-sqlalchemy==0.24.0  # via -r requirements/base.in
 marshmallow==3.9.0        # via flask-marshmallow, marshmallow-enum, marshmallow-sqlalchemy
 mccabe==0.6.1             # via flake8
+minio==7.0.0              # via flask-minio
 mistune==0.8.4            # via flasgger
 mypy-extensions==0.4.3    # via black, mypy
 mypy==0.790               # via -r requirements/tools.in
@@ -58,7 +61,7 @@ sqlalchemy==1.3.19        # via alembic, flask-sqlalchemy, marshmallow-sqlalchem
 toml==0.10.1              # via black, pytest
 typed-ast==1.4.1          # via black, mypy
 typing-extensions==3.7.4.3  # via black, mypy
-urllib3==1.25.11          # via requests, sentry-sdk
+urllib3==1.25.11          # via minio, requests, sentry-sdk
 werkzeug==1.0.1           # via flask
 wtforms==2.3.3            # via flask-admin
 

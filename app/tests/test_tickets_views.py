@@ -99,6 +99,11 @@ def test_base_search(client):
                     'id': ticket2_id,
                     'number': 'N-100',
                     'source': 'cc1551',
+                    'link': None,
+                    'location': None,
+                    'tags': [],
+                    'photos': [],
+                    'priority': None,
                     'status': 'Test status',
                     'subject_id': 1,
                     'text': 'Test text',
@@ -116,6 +121,11 @@ def test_base_search(client):
                     'id': ticket1_id,
                     'number': 'N-100',
                     'source': 'cc1551',
+                    'link': None,
+                    'location': None,
+                    'tags': [],
+                    'photos': [],
+                    'priority': None,
                     'status': 'Test status',
                     'subject_id': 1,
                     'text': 'Test text',
@@ -279,9 +289,9 @@ def test_get_titles(client):
 def test_get_subjects(client):
     city = prepare_city()
 
-    subject1 = prepare_subject(name='Subject 1')
-    subject2 = prepare_subject(name='Subject 2')
-    subject3 = prepare_subject(name='Subject 3')
+    subject1 = prepare_subject(id_=1, name='Subject 1')
+    subject2 = prepare_subject(id_=2, name='Subject 2')
+    subject3 = prepare_subject(id_=3, name='Subject 3')
 
     prepare_ticket(city_id=city.id, subject_id=subject1.id)
     prepare_ticket(city_id=city.id, subject_id=subject1.id)
