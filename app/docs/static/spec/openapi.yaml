@@ -1,0 +1,65 @@
+openapi: "3.0.2"
+info:
+  title: "Документація по API"
+
+servers:
+- url: "https://kyiv-data.ga"
+
+paths:
+  # Пошук
+  /api/search:
+    get:
+      summary: Пошук звернень
+      tags:
+        - Пошук
+
+  # статистика
+  /api/titles:
+    get:
+      summary: Отримати заголовки зверненнь і кількість звернень з таким заголовком.
+      tags:
+        - Статистика
+  /api/subjects:
+    get:
+      summary: Отримати теми звернень і кількість звернень з такою ж темою.
+      tags:
+        - Статистика
+  /api/disticts:
+    get:
+      summary: Отримати райони Кєива і кількість звернень в цьому районі
+      tags:
+        - Статистика
+
+  # звернення
+  /api/tickets:
+    post:
+      summary: Створити звернення
+      tags:
+        - Звернення
+  /api/tickets/{ticket_id}:
+    get:
+      summary: Отримати звренненя
+      tags:
+        - Звернення
+    delete:
+      summary: Видалити звернення
+      tags:
+        - Звернення
+
+  # фото
+  /api/photos:
+    post:
+      summary: Завантажити зображення для зверення
+      tags:
+        - Зображення
+  /api/photos/{photo_id}:
+    get:
+      summary: Отримати зображення
+      tags:
+        - Зображення
+
+tags:
+  - name: Пошук
+  - name: Статистика
+  - name: Звернення
+  - name: Зображення
