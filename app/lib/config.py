@@ -6,6 +6,8 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
     DATABASE_URL: str
     AUTH_TOKEN: str
+    SERVER_URL: str
+    # Storage settings
     STORAGE_ENDPOINT: str
     STORAGE_ACCESS_KEY: str
     STORAGE_SECRET_KEY: str

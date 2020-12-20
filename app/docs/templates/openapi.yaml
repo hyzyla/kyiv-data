@@ -1,0 +1,345 @@
+openapi: "3.0.2"
+info:
+  title: "Документація по API"
+
+servers:
+- url: "{{ server }}"
+
+paths:
+  # Пошук
+  /api/search:
+    get:
+      summary: Пошук звернень
+      tags:
+        - Пошук
+      parameters:
+        - in: query
+          name: number
+          description: Номер зверення
+          schema: { type: string }
+        - in: query
+          name: text
+          description: Текст звернення
+          schema: { type: string }
+        - in: query
+          name: id
+          description: ID звернення
+          schema: { type: string }
+        - in: query
+          name: external_id
+          description: ID з зовнішнього сервісу вказаного в source
+          schema: { type: integer }
+        - in: query
+          name: address
+          description: Адреса звернення
+          schema: { type: string }
+        - in: query
+          name: approx_done_date
+          description: Планується виконати до
+          schema: { type: string, format: date }
+        - in: query
+          name: created_at
+          description: Дата і час коли було створено звернення
+          schema: { type: string, format: date-time }
+        - in: query
+          name: status
+          description: Статус звернення
+          schema:
+            $ref: '#/components/schemas/TicketStatus'
+        - in: query
+          name: subject_id
+          description: Тема звернення
+          schema: { type: integer }
+        - in: query
+          name: title
+          description: Заголовок звернення
+          schema: { type: string }
+        - in: query
+          name: source
+          description: Джерело звернення
+          schema:
+            $ref: '#/components/schemas/TicketSource'
+        - in: query
+          name: district_id
+          description: ID району міста
+          schema: { type: integer }
+        - in: query
+          name: work_taken_by
+          description: Ким взято в роботу
+          schema: { type: string }
+        - in: query
+          name: user_id
+          description: ID користувача
+          schema: { type: string }
+      responses:
+        '200':
+          description: Список тікетів
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketsPage'
+
+  # статистика
+  /api/titles:
+    get:
+      summary: Отримати заголовки зверненнь і кількість звернень з таким заголовком.
+      tags:
+        - Статистика
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TitlesStat'
+
+  /api/subjects:
+    get:
+      summary: Отримати теми звернень і кількість звернень з такою ж темою.
+      tags:
+        - Статистика
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectsStat'
+
+  /api/disticts:
+    get:
+      summary: Отримати райони Кєива і кількість звернень в цьому районі
+      tags:
+        - Статистика
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictStat'
+
+  # звернення
+  /api/tickets:
+    post:
+      summary: Створити звернення
+      security:
+        - UserAuth: [ ]
+          ServiceAuth: [ ]
+      tags:
+        - Звернення
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicket'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+
+  /api/tickets/{ticket_id}:
+    parameters:
+      - name: ticket_id
+        in: path
+        description: ID звернення
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      summary: Отримати звренненя
+      tags:
+        - Звернення
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+    delete:
+      summary: Видалити звернення
+      tags:
+        - Звернення
+      security:
+        - UserAuth: [ ]
+          ServiceAuth: [ ]
+      responses:
+        '200':
+          description: OK
+
+  # фото
+  /api/tickets/photos:
+    post:
+      summary: Завантажити зображення для зверення
+      security:
+        - UserAuth: [ ]
+          ServiceAuth: [ ]
+      tags:
+        - Зображення
+      requestBody:
+        description: Зображення в бінарному форматі
+        required: true
+        content:
+          image/*:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPhoto'
+
+  /api/tickets/photos/{photo_id}:
+    get:
+      summary: Отримати зображення
+      security:
+        - UserAuth: [ ]
+          ServiceAuth: [ ]
+      tags:
+        - Зображення
+      parameters:
+        - name: photo_id
+          in: path
+          description: ID зображення
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+
+tags:
+  - name: Пошук
+  - name: Статистика
+  - name: Звернення
+  - name: Зображення
+
+
+components:
+  schemas:
+    # enums
+    TicketStatus:
+      type: string
+      enum:
+        - На модерації
+        - В роботі
+        - Звернення виконано
+    TicketSource:
+      type: string
+      enum:
+        - cc1551
+        - api
+    TicketPriority:
+      type: string
+      enum:
+        - discomfort
+        - waiting
+        - losing_money
+        - damage
+        - death
+
+    # Response schemas
+    Ticket:
+      properties:
+        id: { type: integer }
+        external_id: { type: integer, required: false }
+        user_id: { type: string }
+        number: { type: string, required: false }
+        title: { type: string }
+        text: { type: string }
+        address: { type: string, required: false }
+        link: { type: string, required: false }
+        work_taken_by: { type: string, required: false }
+        aprox_done_date: { type: string, format: date, required: false }
+        created_at: { type: string, format: date-time }
+        subject_id: { type: integer }
+        district_id: { type: integer, required: false }
+        city_id: { type: integer }
+        status: { $ref: '#/components/schemas/TicketStatus' }
+        source: { $ref: '#/components/schemas/TicketSource'  }
+        priority: { $ref: '#/components/schemas/TicketPriority', required: false }
+        location: { $ref: '#/components/schemas/TicketLocation', required: false }
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketTag'
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketPhoto'
+
+    TicketsPage:
+      properties:
+        num_pages: { type: integer }
+        page: { type: integer }
+        per_page: { type: integer }
+        total_items: { type: integer }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ticket'
+
+    TicketLocation:
+      properties:
+        lat: { type: number }
+        lng: { type: number }
+    TicketTag:
+      properties:
+        name: { type: string }
+    TicketPhoto:
+      properties:
+        id: { type: string, format: uuid }
+    CreateTicket:
+      properties:
+        title: { type: string }
+        subject_id: { type: integer }
+        text: { type: string }
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketTag'
+        address: { type: string, required: false }
+        location: { $ref: '#/components/schemas/TicketLocation', required: false }
+        priority: { $ref: '#/components/schemas/TicketPriority', required: false }
+        link: { type: string, required: false }
+        photos:
+          type: array
+          required: false
+          items:
+            $ref: '#/components/schemas/TicketPhoto'
+        district_id: { type: integer, required: false }
+        city_id: { type: integer }
+
+    TitlesStat:
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        tickets_count: { type: integer }
+    DistrictStat:
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        tickets_count: { type: integer }
+    SubjectsStat:
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        tickets_count: { type: integer }
+
+  securitySchemes:
+    UserAuth:  # Токен користувача
+      type: apiKey
+      in: header
+      name: Custom-Token
+    ServiceAuth:  # Сервісний токен для спілкування між сервісами
+      type: apiKey
+      in: header
+      name: Authorization
