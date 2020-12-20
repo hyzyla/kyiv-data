@@ -1,6 +1,7 @@
 openapi: "3.0.2"
 info:
   title: "Документація по API"
+  version: "0.0.1"
 
 servers:
 - url: "{{ server }}"
@@ -73,7 +74,7 @@ paths:
           schema: { type: string }
       responses:
         '200':
-          description: Список тікетів
+          description: Список звернень
           content:
             application/json:
               schema:
@@ -99,6 +100,7 @@ paths:
         - Статистика
       responses:
         '200':
+          description: Статистика звернь по темах
           content:
             application/json:
               schema:
@@ -111,6 +113,7 @@ paths:
         - Статистика
       responses:
         '200':
+          description: Статистика звернь по районах
           content:
             application/json:
               schema:
@@ -133,6 +136,7 @@ paths:
               $ref: '#/components/schemas/CreateTicket'
       responses:
         '200':
+          description: Звернення створено
           content:
             application/json:
               schema:
@@ -153,6 +157,7 @@ paths:
         - Звернення
       responses:
         '200':
+          description: Звернення було знайдено
           content:
             application/json:
               schema:
@@ -166,7 +171,7 @@ paths:
           ServiceAuth: [ ]
       responses:
         '200':
-          description: OK
+          description: Звернення було видалено
 
   # фото
   /api/tickets/photos:
@@ -187,6 +192,7 @@ paths:
               format: binary
       responses:
         '200':
+          description: ID завантаженого зображення
           content:
             application/json:
               schema:
@@ -210,6 +216,7 @@ paths:
             format: uuid
       responses:
         '200':
+          description: Вміст зображення
           content:
             image/*:
               schema:
@@ -317,6 +324,25 @@ components:
             $ref: '#/components/schemas/TicketPhoto'
         district_id: { type: integer, required: false }
         city_id: { type: integer }
+      example:
+        title: Не працює телепорт
+        city_id: 100
+        address: вул. Прорізна, буд. 13
+        subject_id: 200
+        text: >-
+          На прорізній, біля Віртуаторія, після піщаної бурі перестав працювати Телепорт
+          ДВЗ-12. Починіть, пліз! Дуже хочу потрапити до батьків на День інтернету
+        priority: damage
+        link: https://www.youtube.com/watch?v=oHg5SJYRHA0
+        tags:
+          - name: Телепорт
+          - name: Транспорт
+        location:
+          lat: 19.1
+          lng: 21.02
+        photos:
+          - id: 358eaec0-cb1d-4340-91da-3b0612cab6b5
+
 
     TitlesStat:
       properties:
