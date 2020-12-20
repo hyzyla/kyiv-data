@@ -5,7 +5,7 @@ from sqlalchemy.sql.functions import now
 
 from app.extensions import db
 from app.tickets.enums import TicketSource
-from app.tickets.models import Ticket, Subject, City, District, TicketPhoto
+from app.tickets.models import Ticket, Subject, City, District, TicketPhoto, TicketTag
 
 
 def prepare_ticket(
@@ -52,6 +52,13 @@ def prepare_city(id_: int = 1, name: str = 'Київ') -> City:
     db.session.add(city)
     db.session.commit()
     return city
+
+
+def prepare_ticket_tag(ticket_id: int, name: str) -> TicketTag:
+    tag = TicketTag(ticket_id=ticket_id, name=name)
+    db.session.add(tag)
+    db.session.commit()
+    return tag
 
 
 def prepare_subject(id_: int = 1, name: str = 'Test subject') -> Subject:

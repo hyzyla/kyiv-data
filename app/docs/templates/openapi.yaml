@@ -222,12 +222,27 @@ paths:
               schema:
                 type: string
                 format: binary
+  /api/tickets/tags:
+    get:
+      summary: Отримати список тегів
+      tags:
+        - Теги
+      responses:
+        '200':
+          description: Список тегів
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketTag'
 
 tags:
   - name: Пошук
   - name: Статистика
   - name: Звернення
   - name: Зображення
+  - name: Теги
 
 
 components:

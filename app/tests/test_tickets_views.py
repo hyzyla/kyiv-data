@@ -8,7 +8,7 @@ from app.tests.test_utils import (
     prepare_ticket,
     prepare_city,
     prepare_subject,
-    prepare_district, prepare_photo,
+    prepare_district, prepare_photo, prepare_ticket_tag,
 )
 from app.tickets.enums import TicketPriority
 
@@ -336,3 +336,21 @@ def test_get_districts(client):
             {'tickets_count': 0, 'name': 'District 3', 'id': district3.id},
         ],
     )
+
+
+def test_get_tickets_tags(client):
+    city = prepare_city()
+    district1 = prepare_district()
+
+    ticket1 = prepare_ticket(city_id=city.id, district_id=district1.id)
+    ticket2 = prepare_ticket(city_id=city.id, district_id=district1.id)
+    prepare_ticket_tag(ticket_id=ticket1.id, name='test1')
+    prepare_ticket_tag(ticket_id=ticket1.id, name='test2')
+    prepare_ticket_tag(ticket_id=ticket2.id, name='test1')
+    prepare_ticket_tag(ticket_id=ticket2.id, name='test3')
+
+    response = client.get('/api/tickets/tags')
+    assert response.status_code == HTTPStatus.OK, response.json
+    data = response.json
+    assert len(data) == 3
+    assert {item['name'] for item in data} == {'test1', 'test2', 'test3'}
