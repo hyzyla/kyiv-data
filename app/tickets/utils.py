@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Tuple
 import re
 
@@ -6,7 +5,9 @@ from flask import request
 
 from app.extensions import db
 from app.lib.types import DataDict
-from app.tickets.models import Ticket, TicketLocation, TicketTag, TicketPhoto
+from app.tickets.models import (
+    Ticket, TicketLocation, TicketTag, TicketPhoto, Subject, District
+)
 from app.users.types import UserCtx
 
 TOKEN_RE = re.compile(r'^(Bearer)?\s*(?P<token>.*)$', re.IGNORECASE)
@@ -93,6 +94,25 @@ def create_tickets_tags(items: List[DataDict]) -> List[TicketTag]:
 def get_tickets_photos(items: List[DataDict]) -> List[TicketPhoto]:
     photos_ids = {item['id'] for item in items}
     return db.session.query(TicketPhoto).filter(TicketPhoto.id.in_(photos_ids)).all()
+
+
+def get_tickets_titles():
+    return (
+        db.session.query(Ticket.title)
+        .select_from(Ticket)
+        .filter(Ticket.title.isnot(None))
+        .group_by(Ticket.title)
+        .order_by(Ticket.title)
+        .all()
+    )
+
+
+def get_districts() -> List[District]:
+    return db.session.query(District).order_by(District.id).all()
+
+
+def get_subjects() -> List[Subject]:
+    return db.session.query(Subject).order_by(Subject.id).all()
 
 
 def create_ticket(data: DataDict, ctx: UserCtx) -> Ticket:

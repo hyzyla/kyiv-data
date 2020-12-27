@@ -83,6 +83,7 @@ paths:
   # статистика
   /api/titles:
     get:
+      deprecated: true
       summary: Отримати заголовки зверненнь і кількість звернень з таким заголовком.
       tags:
         - Статистика
@@ -91,10 +92,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TitlesStat'
+                type: array
+                items:
+                  $ref: '#/components/schemas/TitlesStat'
+
+  /api/stats/titles/tickets:
+    get:
+      summary: Отримати статисику по кількості звернень для кожного заголовку
+      tags:
+        - Статистика
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TitlesStat'
 
   /api/subjects:
     get:
+      deprecated: true
       summary: Отримати теми звернень і кількість звернень з такою ж темою.
       tags:
         - Статистика
@@ -104,10 +122,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubjectsStat'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubjectsStat'
+
+  /api/stats/subjects/tickets:
+    get:
+      summary: Отримтаи статистику по кількості звернень для кожної теми
+      tags:
+        - Статистика
+      responses:
+        '200':
+          description: Статистика звернь по темах
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubjectsStat'
 
   /api/disticts:
     get:
+      deprecated: true
       summary: Отримати райони Кєива і кількість звернень в цьому районі
       tags:
         - Статистика
@@ -117,7 +153,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DistrictStat'
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistrictStat'
+
+  /api/stats/districts/tickets:
+    get:
+      summary: Отримати статистику по кількості звернень для кожного району
+      tags:
+        - Статистика
+      responses:
+        '200':
+          description: Статистика звернь по районах
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistrictStat'
 
   # звернення
   /api/tickets:
@@ -172,6 +225,51 @@ paths:
       responses:
         '200':
           description: Звернення було видалено
+
+  /api/tickets/titles:
+    get:
+      summary: Отримати заголовки звернення
+      tags:
+        - Звернення
+      responses:
+        '200':
+          description: Список заголовків
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketTitle'
+
+  /api/tickets/subjects:
+    get:
+      summary: Отримати список тем звернень
+      tags:
+        - Звернення
+      responses:
+        '200':
+          description: Список тем звернень
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketSubject'
+
+  /api/tickets/districts:
+    get:
+      summary: Отримати список районів
+      tags:
+        - Звернення
+      responses:
+        '200':
+          description: Список ройонів
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketDistrict'
 
   # фото
   /api/tickets/photos:
@@ -361,19 +459,34 @@ components:
 
     TitlesStat:
       properties:
-        id: { type: integer }
-        name: { type: string }
+        title: { type: string }
         tickets_count: { type: integer }
+
     DistrictStat:
       properties:
         id: { type: integer }
         name: { type: string }
         tickets_count: { type: integer }
+
     SubjectsStat:
       properties:
         id: { type: integer }
         name: { type: string }
         tickets_count: { type: integer }
+
+    TicketTitle:
+      properties:
+        title: { type: string }
+
+    TicketDistrict:
+      properties:
+        id: { type: integer }
+        name: { type: string }
+
+    TicketSubject:
+      properties:
+        id: { type: integer }
+        name: { type: string }
 
   securitySchemes:
     UserAuth:  # Токен користувача

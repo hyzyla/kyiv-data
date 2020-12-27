@@ -3,7 +3,7 @@ import logging
 import sentry_sdk
 from flask import Flask, jsonify
 from sentry_sdk.integrations.flask import FlaskIntegration
-from app import tickets, users, docs
+from app import tickets, users, docs, statistics
 
 from app.extensions import admin, db, ma, migrate, swagger, storage
 from app.lib.config import settings
@@ -49,6 +49,7 @@ def register_extensions(app):
 def register_blueprints(app):
     """Register Flask blueprints."""
     app.register_blueprint(tickets.views.blueprint)
+    app.register_blueprint(statistics.views.blueprint)
     app.register_blueprint(users.views.blueprint)
     app.register_blueprint(docs.views.blueprint)
     return None

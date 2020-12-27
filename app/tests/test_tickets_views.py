@@ -285,74 +285,6 @@ def test_create_ticket(client: FlaskClient, headers, status, data, expected):
     assert data == expected
 
 
-def test_get_titles(client):
-    city = prepare_city()
-    prepare_ticket(city_id=city.id, title='Test 1')
-    prepare_ticket(city_id=city.id, title='Test 1')
-    prepare_ticket(city_id=city.id, title='Test 1')
-    prepare_ticket(city_id=city.id, title='Test 2')
-    response = client.get('/api/titles')
-    assert response.status_code == HTTPStatus.OK, response.json
-    data = response.json
-
-    TestCase().assertEqual(
-        data,
-        [{'tickets_count': 3, 'title': 'Test 1'}, {'tickets_count': 1, 'title': 'Test 2'}],
-    )
-
-
-def test_get_subjects(client):
-    city = prepare_city()
-
-    subject1 = prepare_subject(id_=1, name='Subject 1')
-    subject2 = prepare_subject(id_=2, name='Subject 2')
-    subject3 = prepare_subject(id_=3, name='Subject 3')
-
-    prepare_ticket(city_id=city.id, subject_id=subject1.id)
-    prepare_ticket(city_id=city.id, subject_id=subject1.id)
-    prepare_ticket(city_id=city.id, subject_id=subject2.id)
-    prepare_ticket(city_id=city.id, subject_id=0)
-
-    response = client.get('/api/subjects')
-    assert response.status_code == HTTPStatus.OK, response.json
-    data = response.json
-
-    TestCase().assertEqual(
-        data,
-        [
-            {'tickets_count': 2, 'name': 'Subject 1', 'id': subject1.id},
-            {'tickets_count': 1, 'name': 'Subject 2', 'id': subject2.id},
-            {'tickets_count': 0, 'name': 'Subject 3', 'id': subject3.id},
-        ],
-    )
-
-
-def test_get_districts(client):
-    city = prepare_city()
-
-    district1 = prepare_district(name='District 1')
-    district2 = prepare_district(name='District 2')
-    district3 = prepare_district(name='District 3')
-
-    prepare_ticket(city_id=city.id, district_id=district1.id)
-    prepare_ticket(city_id=city.id, district_id=district1.id)
-    prepare_ticket(city_id=city.id, district_id=district2.id)
-    prepare_ticket(city_id=city.id, district_id=0)
-
-    response = client.get('/api/districts')
-    assert response.status_code == HTTPStatus.OK, response.json
-    data = response.json
-
-    TestCase().assertEqual(
-        data,
-        [
-            {'tickets_count': 2, 'name': 'District 1', 'id': district1.id},
-            {'tickets_count': 1, 'name': 'District 2', 'id': district2.id},
-            {'tickets_count': 0, 'name': 'District 3', 'id': district3.id},
-        ],
-    )
-
-
 def test_get_tickets_tags(client):
     city = prepare_city()
     district1 = prepare_district()
@@ -369,3 +301,46 @@ def test_get_tickets_tags(client):
     data = response.json
     assert len(data) == 3
     assert {item['name'] for item in data} == {'test1', 'test2', 'test3'}
+
+
+def test_get_titles(client):
+    city = prepare_city()
+
+    prepare_ticket(title='Title1', city_id=city.id)
+    prepare_ticket(title='Title2', city_id=city.id)
+    prepare_ticket(title='Title2', city_id=city.id)
+    prepare_ticket(title=None, city_id=city.id)
+
+    response = client.get('/api/tickets/titles')
+    assert response.status_code == HTTPStatus.OK, response.json
+    data = response.json
+    assert len(data) == 2
+    assert {item['title'] for item in data} == {'Title1', 'Title2'}
+
+
+def test_get_districts(client):
+    district1 = prepare_district(name='District1')
+    district2 = prepare_district(name='District2')
+    district3 = prepare_district(name='District3')
+
+    response = client.get('/api/tickets/districts')
+    assert response.status_code == HTTPStatus.OK, response.json
+    assert response.json == [
+        {'id': district1.id, 'name': 'District1'},
+        {'id': district2.id, 'name': 'District2'},
+        {'id': district3.id, 'name': 'District3'},
+    ]
+
+
+def test_get_subjects(client):
+    subject1 = prepare_subject(id_=1, name='Subject1')
+    subject2 = prepare_subject(id_=2, name='Subject2')
+    subject3 = prepare_subject(id_=3, name='Subject3')
+    response = client.get('/api/tickets/subjects')
+    assert response.status_code == HTTPStatus.OK, response.json
+    assert response.json == [
+        {'id': subject1.id, 'name': 'Subject1'},
+        {'id': subject2.id, 'name': 'Subject2'},
+        {'id': subject3.id, 'name': 'Subject3'},
+    ]
+

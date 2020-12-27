@@ -41,46 +41,51 @@ def search():
 
 
 @blueprint.route('/api/districts')
-def get_districts():
-    # Do not optimize without any reason for that
-    districts = (
-        db.session.query()
-        .add_columns(District.id, District.name, db.func.count(Ticket.id).label('tickets_count'))
-        .select_from(District)
-        .outerjoin(Ticket, Ticket.district_id == District.id)
-        .group_by(District.id)
-        .order_by(db.text('tickets_count DESC'))
-        .all()
-    )
-    return api_response(districts_schema.dumps(districts))
+def get_districts_stat():
+    # TODO: remove this API
+    from app.statistics.schemas import districts_tickets as schema
+    from app.statistics.db import get_districts_tickets_stat
+
+    stat = get_districts_tickets_stat()
+    return api_response(schema.dumps(stat))
 
 
 @blueprint.route('/api/subjects')
-def get_subjects():
-    subjects = (
-        db.session.query()
-        .add_columns(Subject.id, Subject.name, db.func.count(Ticket.id).label('tickets_count'))
-        .select_from(Subject)
-        .outerjoin(Ticket, Ticket.subject_id == Subject.id)
-        .group_by(Subject.id)
-        .order_by(db.text('tickets_count DESC'))
-        .all()
-    )
-    return api_response(subjects_schema.dumps(subjects))
+def get_subjects_stat():
+    # TODO: remove this api
+    from app.statistics.schemas import subjects_tickets as schema
+    from app.statistics.db import get_subjects_tickets_stat
+
+    stat = get_subjects_tickets_stat()
+    return api_response(schema.dumps(stat))
 
 
 @blueprint.route('/api/titles')
+def get_titles_stat():
+    # TODO: remove this API
+    from app.statistics.schemas import titles_tickets as schema
+    from app.statistics.db import get_titles_tickets_stat
+
+    stat = get_titles_tickets_stat()
+    return api_response(schema.dumps(stat))
+
+
+@blueprint.route('/api/tickets/titles')
 def get_titles():
-    subjects = (
-        db.session.query()
-        .add_columns(Ticket.title, db.func.count(Ticket.id).label('tickets_count'))
-        .select_from(Ticket)
-        .filter(Ticket.title.isnot(None))
-        .group_by(Ticket.title)
-        .order_by(db.text('tickets_count DESC'))
-        .all()
-    )
-    return api_response(titles_schema.dumps(subjects))
+    titles = utils.get_tickets_titles()
+    return api_response(titles_schema.dumps(titles))
+
+
+@blueprint.route('/api/tickets/districts')
+def get_districts():
+    districts = utils.get_districts()
+    return api_response(districts_schema.dumps(districts))
+
+
+@blueprint.route('/api/tickets/subjects')
+def get_subjects():
+    subjects = utils.get_subjects()
+    return api_response(subjects_schema.dumps(subjects))
 
 
 @blueprint.route('/api/tickets', methods=['POST'])

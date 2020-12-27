@@ -110,7 +110,6 @@ class DistrictSchema(ma.SQLAlchemySchema):
 
     id = ma.Integer()
     name = ma.String()
-    tickets_count = ma.Integer()
 
 
 class SubjectSchema(ma.SQLAlchemySchema):
@@ -119,20 +118,10 @@ class SubjectSchema(ma.SQLAlchemySchema):
 
     id = ma.Integer()
     name = ma.String()
-    tickets_count = ma.Integer()
-
-
-class CitySchema(ma.SQLAlchemySchema):
-    class Meta:
-        model = City
-
-    id = ma.Integer()
-    name = ma.String()
 
 
 class TitlesSchema(ma.Schema):
     title = ma.String(dump_only=True)
-    tickets_count = ma.Integer(dump_only=True)
 
 
 ticket_schema = TicketSchema()
@@ -142,5 +131,4 @@ tickets_schema = TicketPageSchema()
 districts_schema = DistrictSchema(many=True)
 subjects_schema = SubjectSchema(many=True)
 titles_schema = TitlesSchema(many=True)
-cities_schema = CitySchema(many=True)
 tags_schema = TicketTagSchema(many=True)
