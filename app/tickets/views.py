@@ -75,6 +75,7 @@ def get_titles():
         db.session.query()
         .add_columns(Ticket.title, db.func.count(Ticket.id).label('tickets_count'))
         .select_from(Ticket)
+        .filter(Ticket.title.isnot(None))
         .group_by(Ticket.title)
         .order_by(db.text('tickets_count DESC'))
         .all()

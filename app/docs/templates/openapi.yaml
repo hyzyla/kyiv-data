@@ -275,16 +275,16 @@ components:
         external_id: { type: integer, required: false }
         user_id: { type: string }
         number: { type: string, required: false }
-        title: { type: string }
+        title: { type: string, required: false }
         text: { type: string }
         address: { type: string, required: false }
         link: { type: string, required: false }
         work_taken_by: { type: string, required: false }
         aprox_done_date: { type: string, format: date, required: false }
         created_at: { type: string, format: date-time }
-        subject_id: { type: integer }
+        subject_id: { type: integer, required: false }
         district_id: { type: integer, required: false }
-        city_id: { type: integer }
+        city_id: { type: integer, required: false }
         status: { $ref: '#/components/schemas/TicketStatus' }
         source: { $ref: '#/components/schemas/TicketSource'  }
         priority: { $ref: '#/components/schemas/TicketPriority', required: false }
@@ -321,8 +321,8 @@ components:
         id: { type: string, format: uuid }
     CreateTicket:
       properties:
-        title: { type: string }
-        subject_id: { type: integer }
+        title: { type: string, required: false }
+        subject_id: { type: integer, required: false }
         text: { type: string }
         tags:
           type: array
@@ -338,7 +338,7 @@ components:
           items:
             $ref: '#/components/schemas/TicketPhoto'
         district_id: { type: integer, required: false }
-        city_id: { type: integer }
+        city_id: { type: integer, required: false }
       example:
         title: Не працює телепорт
         city_id: 100

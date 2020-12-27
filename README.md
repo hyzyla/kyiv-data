@@ -39,3 +39,8 @@ sudo chown -R $USER migrations
 git push dokku main:master
 ```
 
+## Run test
+```
+docker-compose run --rm pytest
+```
+

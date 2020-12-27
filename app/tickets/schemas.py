@@ -69,8 +69,8 @@ class TicketSchema(ma.SQLAlchemySchema):
 
 
 class CreateTicketSchema(ma.Schema):
-    title = ma.String(required=True, validate=validate.Length(max=1024))
-    subject_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
+    title = ma.String(required=False, validate=validate.Length(max=1024))
+    subject_id = ma.Integer(required=False, validate=validate.Range(min=0), strict=True)
     text = ma.String(required=True, validate=validate.Length(max=8192))
     tags = ma.List(ma.Nested(TicketTagSchema), required=False)
     address = ma.String(required=True, validate=validate.Length(max=1024))
@@ -79,10 +79,13 @@ class CreateTicketSchema(ma.Schema):
     link = ma.URL(required=False)
     photos = ma.List(ma.Nested(TicketPhotoSchema), required=False)
     district_id = ma.Integer(required=False, validate=validate.Range(min=0), strict=True)
-    city_id = ma.Integer(required=True, validate=validate.Range(min=0), strict=True)
+    city_id = ma.Integer(required=False, validate=validate.Range(min=0), strict=True)
 
     @validates('subject_id')
     def validate_subject(self, subject_id: int, **kwargs):
+        if subject_id is None:
+            return
+
         subject = db.session.query(Subject).get(subject_id)
         if subject is None:
             return ValidationError('Теми не знайдено')

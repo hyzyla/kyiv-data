@@ -170,6 +170,21 @@ def test_delete_ticket(client: FlaskClient):
     [
         ({'Authorization': 'wrong'}, HTTPStatus.FORBIDDEN, {}, None),
         (None, HTTPStatus.FORBIDDEN, {}, None),
+        # Create with small amount of data
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            {
+                'address': 'вул. Прорізна, буд. 13',
+                'text': TEST_TEXT,
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'city_id': None,
+                'title': None,
+                'subject_id': None,
+            }
+        ),
         # Simple create
         (
             AUTH_HEADERS,

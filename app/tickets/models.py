@@ -17,7 +17,7 @@ class Ticket(db.Model):
     external_id = db.Column(BigInteger, index=True)
     number = db.Column(Text)
 
-    title = db.Column(Text, nullable=False, index=True)
+    title = db.Column(Text, nullable=True, index=True)
     text = db.Column(Text, nullable=False)
     status = db.Column(Text, nullable=False)
     address = db.Column(Text)
@@ -26,11 +26,11 @@ class Ticket(db.Model):
     work_taken_by = db.Column(Text)
     approx_done_date = db.Column(Date)
     created_at = db.Column(DateTime, nullable=False, default=datetime.utcnow)
-    subject_id = db.Column(BigInteger, nullable=False, index=True)
+    subject_id = db.Column(BigInteger, nullable=True, index=True)
     user_id = db.Column(Text, nullable=False)
 
     district_id = db.Column(BigInteger, index=True)
-    city_id = db.Column(BigInteger, nullable=False)
+    city_id = db.Column(BigInteger, nullable=True)
 
     source = db.Column(db.Enum(TicketSource, native_enum=False, length=100))
 
