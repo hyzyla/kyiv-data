@@ -124,6 +124,11 @@ class TitlesSchema(ma.Schema):
     title = ma.String(dump_only=True)
 
 
+class TicketSourceSchema(ma.Schema):
+    value = ma.String(dump_only=True)
+    name = ma.String(dump_only=True)
+
+
 ticket_schema = TicketSchema()
 ticket_photo_schema = TicketPhotoSchema()
 create_ticket_schema = CreateTicketSchema()
@@ -132,3 +137,4 @@ districts_schema = DistrictSchema(many=True)
 subjects_schema = SubjectSchema(many=True)
 titles_schema = TitlesSchema(many=True)
 tags_schema = TicketTagSchema(many=True)
+sources_schema = TicketSourceSchema(many=True)

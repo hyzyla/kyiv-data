@@ -8,8 +8,10 @@ from flask import redirect
 from app.extensions import db, storage
 from app.lib.utils import api_response, gen_uuid
 from app.tickets import validators, utils
+from app.tickets.enums import TicketSource
 from app.tickets.models import Ticket, District, Subject, TicketPhoto, TicketTag
-from app.tickets.schemas import ticket_schema, ticket_photo_schema, tags_schema
+from app.tickets.schemas import ticket_schema, ticket_photo_schema, tags_schema, \
+    sources_schema
 from app.tickets.schemas import (
     tickets_schema,
     districts_schema,
@@ -149,3 +151,12 @@ def upload_photo(ctx):
 def get_tags():
     tags = db.session.query(TicketTag.name).group_by(TicketTag.name).all()
     return api_response(tags_schema.dumps(tags))
+
+
+@blueprint.route('/api/tickets/sources', methods=['GET'])
+def get_sources():
+    data = [
+        {'value': TicketSource.cc1551.value, 'name': '1551'},
+        {'value': TicketSource.api.value, 'name': 'Офіс Трансформації'},
+    ]
+    return api_response(sources_schema.dumps(data))

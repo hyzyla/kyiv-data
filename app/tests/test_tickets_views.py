@@ -344,3 +344,11 @@ def test_get_subjects(client):
         {'id': subject3.id, 'name': 'Subject3'},
     ]
 
+
+def test_get_sources(client):
+    response = client.get('/api/tickets/sources')
+    assert response.status_code == HTTPStatus.OK, response.json
+    assert response.json == [
+        {'value': 'cc1551', 'name': '1551'},
+        {'value': 'api', 'name': 'Офіс Трансформації'},
+    ]

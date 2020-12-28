@@ -59,7 +59,7 @@ paths:
           name: source
           description: Джерело звернення
           schema:
-            $ref: '#/components/schemas/TicketSource'
+            $ref: '#/components/schemas/TicketSourceEnum'
         - in: query
           name: district_id
           description: ID району міста
@@ -271,6 +271,21 @@ paths:
                 items:
                   $ref: '#/components/schemas/TicketDistrict'
 
+  /api/tickets/sources:
+    get:
+      summary: Отримати список джерел даних звернень
+      tags:
+        - Звернення
+      responses:
+        '200':
+          description: Список джерел
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TicketSource'
+
   # фото
   /api/tickets/photos:
     post:
@@ -352,7 +367,7 @@ components:
         - На модерації
         - В роботі
         - Звернення виконано
-    TicketSource:
+    TicketSourceEnum:
       type: string
       enum:
         - cc1551
@@ -384,7 +399,7 @@ components:
         district_id: { type: integer, required: false }
         city_id: { type: integer, required: false }
         status: { $ref: '#/components/schemas/TicketStatus' }
-        source: { $ref: '#/components/schemas/TicketSource'  }
+        source: { $ref: '#/components/schemas/TicketSourceEnum'  }
         priority: { $ref: '#/components/schemas/TicketPriority', required: false }
         location: { $ref: '#/components/schemas/TicketLocation', required: false }
         tags:
@@ -486,6 +501,11 @@ components:
     TicketSubject:
       properties:
         id: { type: integer }
+        name: { type: string }
+
+    TicketSource:
+      properties:
+        value: { type: string }
         name: { type: string }
 
   securitySchemes:
