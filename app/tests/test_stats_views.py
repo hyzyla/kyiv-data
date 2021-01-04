@@ -96,9 +96,7 @@ def test_get_subject_stat_with_source_filter(client):
     response = client.get('/api/stats/subjects/tickets', query_string={'source': 'api'})
     assert response.status_code == HTTPStatus.OK, response.json
     data = response.json
-    from pprint import pprint
-
-    pprint(data)
+    data = sorted(data, key=lambda item: item['id'])
     TestCase().assertEqual(
         data,
         [

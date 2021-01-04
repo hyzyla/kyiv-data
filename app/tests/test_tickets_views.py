@@ -43,6 +43,7 @@ TEST_CREATE_TICKET = {
 TEST_CREATE_TICKET_EXPECTED = {
     'address': 'вул. Прорізна, буд. 13',
     'approx_done_date': None,
+    'detection_date': None,
     'city_id': 100,
     'created_at': mock.ANY,
     'district_id': None,
@@ -92,6 +93,7 @@ def test_base_search(client):
                 {
                     'address': 'Test address',
                     'approx_done_date': '2020-11-22',
+                    'detection_date': None,
                     'city_id': city_id,
                     'created_at': mock.ANY,
                     'district_id': 1,
@@ -114,6 +116,7 @@ def test_base_search(client):
                 {
                     'address': 'Test address',
                     'approx_done_date': '2020-11-22',
+                    'detection_date': None,
                     'city_id': city_id,
                     'created_at': mock.ANY,
                     'district_id': 1,
@@ -262,6 +265,32 @@ def test_delete_ticket(client: FlaskClient):
                 'photos': [
                     {'id': TEST_UUID_1},  # only uploaded photo
                 ],
+            },
+        ),
+        # With wrong detection_date
+        (
+            AUTH_HEADERS,
+            HTTPStatus.BAD_REQUEST,
+            {
+                **TEST_CREATE_TICKET,
+                'detection_date': 'HELLO WORLD',
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'detection_date': 'HELLO WORLD',
+            },
+        ),
+        # With detection_date
+        (
+            AUTH_HEADERS,
+            HTTPStatus.OK,
+            {
+                **TEST_CREATE_TICKET,
+                'detection_date': '2014-12-22T03:12:58+00:00',
+            },
+            {
+                **TEST_CREATE_TICKET_EXPECTED,
+                'detection_date': '2014-12-22T03:12:58',
             },
         ),
     ],

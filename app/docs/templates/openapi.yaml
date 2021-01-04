@@ -72,6 +72,10 @@ paths:
           name: user_id
           description: ID користувача
           schema: { type: string }
+        - in: query
+          name: detection_date
+          description: Дата виявилення
+          schema: { type: date-time }
       responses:
         '200':
           description: Список звернень
@@ -101,6 +105,11 @@ paths:
       summary: Отримати статисику по кількості звернень для кожного заголовку
       tags:
         - Статистика
+      parameters:
+        - in: query
+          name: fake
+          required: false
+          description: Можна використовувати всі ті ж фільтри, що й для пошуку зверень
       responses:
         '200':
           content:
@@ -131,6 +140,11 @@ paths:
       summary: Отримтаи статистику по кількості звернень для кожної теми
       tags:
         - Статистика
+      parameters:
+        - in: query
+          name: fake
+          required: false
+          description: Можна використовувати всі ті ж фільтри, що й для пошуку зверень
       responses:
         '200':
           description: Статистика звернь по темах
@@ -162,6 +176,11 @@ paths:
       summary: Отримати статистику по кількості звернень для кожного району
       tags:
         - Статистика
+      parameters:
+        - in: query
+          name: fake
+          required: false
+          description: Можна використовувати всі ті ж фільтри, що й для пошуку зверень
       responses:
         '200':
           description: Статистика звернь по районах
@@ -394,6 +413,7 @@ components:
         link: { type: string, required: false }
         work_taken_by: { type: string, required: false }
         aprox_done_date: { type: string, format: date, required: false }
+        datection_date: { type: string, format: date-time, required: false }
         created_at: { type: string, format: date-time }
         subject_id: { type: integer, required: false }
         district_id: { type: integer, required: false }

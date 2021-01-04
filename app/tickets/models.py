@@ -29,6 +29,8 @@ class Ticket(db.Model):
     subject_id = db.Column(BigInteger, nullable=True, index=True)
     user_id = db.Column(Text, nullable=False)
 
+    detection_date = db.Column(DateTime, nullable=True)
+
     district_id = db.Column(BigInteger, index=True)
     city_id = db.Column(BigInteger, nullable=True)
 
