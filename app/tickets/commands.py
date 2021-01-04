@@ -69,7 +69,8 @@ def _fetch_tickets_page(
             'district_ids[]': districts_ids,
         },
     )
-    if int(response.headers['X-RateLimit-Remaining']) < 2:
+    rate_limiting = response.headers.get('X-RateLimit-Remaining')
+    if rate_limiting and int(rate_limiting) < 2:
         sleep(60)
     response.raise_for_status()
     return response.json()
