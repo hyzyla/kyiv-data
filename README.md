@@ -39,6 +39,11 @@ sudo chown -R $USER migrations
 git push dokku main:master
 ```
 
+## Run migration on server (TODO: do this automatically)
+```
+dokku --rm run -e FLASK_APP=runner:app kyiv-data.ga flask db upgrade heads
+```
+
 ## Run test
 ```
 docker-compose run --rm pytest
