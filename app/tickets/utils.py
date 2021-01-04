@@ -66,7 +66,8 @@ def _build_expression(column: db.Column, query: str):
     elif op == 'lte':
         return column <= query
     elif op == 'like':
-        return column.ilike(query)
+        query = query.removesuffix('%').removeprefix('%')
+        return column.ilike(f'%{query}%')
 
     return None
 

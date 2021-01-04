@@ -48,7 +48,8 @@ def get_districts_stat():
     from app.statistics.schemas import districts_tickets as schema
     from app.statistics.db import get_districts_tickets_stat
 
-    stat = get_districts_tickets_stat()
+    filters = get_search_filters()
+    stat = get_districts_tickets_stat(filters=filters)
     return api_response(schema.dumps(stat))
 
 
@@ -58,7 +59,8 @@ def get_subjects_stat():
     from app.statistics.schemas import subjects_tickets as schema
     from app.statistics.db import get_subjects_tickets_stat
 
-    stat = get_subjects_tickets_stat()
+    filters = get_search_filters()
+    stat = get_subjects_tickets_stat(filters=filters)
     return api_response(schema.dumps(stat))
 
 
@@ -68,7 +70,8 @@ def get_titles_stat():
     from app.statistics.schemas import titles_tickets as schema
     from app.statistics.db import get_titles_tickets_stat
 
-    stat = get_titles_tickets_stat()
+    filters = get_search_filters()
+    stat = get_titles_tickets_stat(filters=filters)
     return api_response(schema.dumps(stat))
 
 
